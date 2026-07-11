@@ -1,7 +1,7 @@
 {
   "name": "よていクエスト",
   "short_name": "よてい",
-  "description": "レトロRPG風の自分用月間予定表",
+  "description": "レトロRPG風ライフ管理アプリ",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

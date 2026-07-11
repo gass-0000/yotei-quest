@@ -1,26 +1,16 @@
-# よていクエスト
+# よていクエスト Ver.2
 
-レトロRPG風の、自分用月間予定表です。
+追加機能:
+- 町マップ
+- 今日の予定
+- 月間予定表
+- 勉強記録
+- 読書100冊記録
+- 仕事の改善アイデア
+- 子どもの予定
 
-## GitHubへアップロードするファイル
+## 更新方法
+GitHubのリポジトリで、既存の index.html と sw.js を削除または上書きし、
+このZIP内の全ファイルをアップロードしてください。
 
-- index.html
-- manifest.webmanifest
-- sw.js
-- icon-180.png
-- icon-192.png
-- icon-512.png
-
-## GitHub Pagesの設定
-
-1. リポジトリの「Settings」を開く
-2. 左側の「Pages」を開く
-3. Build and deployment の Source を「Deploy from a branch」
-4. Branch を「main」、フォルダを「/(root)」
-5. Saveを押す
-6. 数分後に表示されるURLをSafariで開く
-7. 共有 → ホーム画面に追加
-
-## データについて
-
-予定内容はGitHubには保存されず、利用している端末のブラウザ内に保存されます。
+GitHub Pagesは数分で自動更新されます。

@@ -1,382 +1,276 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#17112e">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="よていクエスト">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="apple-touch-icon" href="./icon-180.png">
-  <title>よていクエスト</title>
-  <style>
-    :root{
-      --bg1:#130e28; --bg2:#251141; --panel:#050507; --panel2:#15131e;
-      --white:#fffdf8; --muted:#c7bfd9; --purple:#7542aa; --pink:#ef74c8;
-      --yellow:#f5d76e; --red:#7a2939; --blue:#91b9ff;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;background:var(--bg1);color:var(--white)}
-    body{
-      font-family:"Courier New","Hiragino Kaku Gothic ProN","Yu Gothic",monospace;
-      background:
-        radial-gradient(circle at 18% 18%,rgba(239,116,200,.18),transparent 28%),
-        radial-gradient(circle at 84% 16%,rgba(101,79,220,.20),transparent 32%),
-        linear-gradient(180deg,var(--bg1),var(--bg2) 48%,#101024);
-      image-rendering:pixelated;
-    }
-    body::before{
-      content:"";position:fixed;inset:0;pointer-events:none;
-      background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px)
-    }
-    button,input,textarea,select{font:inherit}
-    button{touch-action:manipulation}
-    .app{
-      width:min(100%,760px);margin:0 auto;
-      padding:calc(10px + env(safe-area-inset-top)) 10px calc(96px + env(safe-area-inset-bottom))
-    }
-    .topbar{display:flex;justify-content:space-between;align-items:center;padding:8px 2px 10px}
-    .brand{font-weight:700;letter-spacing:.08em}
-    .status{font-size:12px;color:var(--muted)}
-    .panel{
-      background:var(--panel);border:4px solid white;outline:3px solid black;
-      box-shadow:inset 0 0 0 3px #5b5963,7px 7px 0 rgba(0,0,0,.42);
-      border-radius:7px
-    }
-    .header{padding:14px;background:linear-gradient(180deg,#09090d,#11101b)}
-    .month-row{display:grid;grid-template-columns:48px 1fr 48px;gap:10px;align-items:center}
-    .month-title{text-align:center;font-size:clamp(20px,5vw,30px);letter-spacing:.08em}
-    .icon-btn,.main-btn,.small-btn,.nav-btn,.dialog-btn{
-      color:white;border:0;cursor:pointer
-    }
-    .icon-btn{
-      height:42px;background:#2c1a50;border:3px solid white;outline:2px solid black;
-      border-radius:4px;font-size:20px
-    }
-    .quest-line{text-align:center;color:#ddd5ef;font-size:13px;margin-top:10px}
-    .calendar{margin-top:14px;padding:10px}
-    .weekdays,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-    .weekdays div{text-align:center;padding:6px 0;font-size:12px;color:#d8d0ed}
-    .weekdays div:first-child{color:#ff9eb2}.weekdays div:last-child{color:var(--blue)}
-    .day{
-      min-height:64px;position:relative;padding:6px 4px;color:white;background:#13131a;
-      border:2px solid #6c647c;border-radius:3px;overflow:hidden;cursor:pointer
-    }
-    .day.empty{opacity:.16;cursor:default}
-    .day.today{border-color:var(--yellow);box-shadow:inset 0 0 0 2px #806d19}
-    .day.selected{background:#3c2363;border-color:white}
-    .day-number{font-size:14px;font-weight:700}
-    .day:nth-child(7n+1) .day-number{color:#ff9eb2}
-    .day:nth-child(7n) .day-number{color:var(--blue)}
-    .event-dot{
-      display:block;margin-top:5px;padding:3px 4px;font-size:9px;white-space:nowrap;
-      overflow:hidden;text-overflow:ellipsis;border-left:4px solid var(--pink);background:#251a35
-    }
-    .event-count{position:absolute;right:4px;bottom:3px;font-size:9px;color:#d8d0ed}
-    .details{margin-top:14px;padding:14px}
-    .detail-title{font-size:18px;margin:0 0 12px}
-    .empty-message{padding:14px 2px;color:var(--muted)}
-    .event-card{
-      background:#17131f;border:2px solid #746d81;padding:10px;margin:8px 0;
-      display:grid;grid-template-columns:1fr auto;gap:8px
-    }
-    .event-time{color:var(--yellow);font-size:13px}
-    .event-name{font-size:16px;margin-top:3px}
-    .event-note{color:var(--muted);font-size:12px;white-space:pre-wrap;margin-top:4px}
-    .event-actions{display:flex;gap:6px;align-items:start}
-    .small-btn{padding:6px 8px;background:#34204f;border:2px solid white;outline:1px solid black;font-size:12px}
-    .small-btn.danger{background:#5d2330}
-    .main-btn{
-      width:100%;margin-top:12px;padding:13px 14px;font-weight:700;
-      background:linear-gradient(180deg,#7441aa,#4d2c79);
-      border:3px solid white;outline:2px solid black;border-radius:4px
-    }
-    .bottom-nav{
-      position:fixed;z-index:20;left:50%;bottom:0;transform:translateX(-50%);
-      width:min(100%,760px);padding:8px 12px calc(8px + env(safe-area-inset-bottom));
-      display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
-      background:rgba(6,5,13,.96);border-top:3px solid white
-    }
-    .nav-btn{background:#21153e;min-height:54px;border:2px solid #6d5e85;font-size:12px}
-    .nav-btn strong{display:block;font-size:20px;margin-bottom:2px}
-    .modal{
-      position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.78);display:none;
-      align-items:flex-end;justify-content:center;padding:14px
-    }
-    .modal.show{display:flex}
-    .modal-card{width:min(100%,620px);padding:16px;max-height:92vh;overflow:auto}
-    .modal-card h2{margin:0 0 14px}
-    label{display:block;margin:10px 0 5px;color:#ddd5ee;font-size:13px}
-    input,textarea,select{
-      width:100%;padding:11px;color:white;background:#130f19;border:2px solid #9c92ad;border-radius:2px
-    }
-    textarea{min-height:86px;resize:vertical}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-    .dialog-btn{padding:12px;background:#352050;border:3px solid white;outline:2px solid black}
-    .dialog-btn.primary{background:#63348f}
-    .toast{
-      position:fixed;left:50%;bottom:94px;transform:translateX(-50%);z-index:80;
-      padding:10px 14px;background:#050507;border:3px solid white;outline:2px solid black;display:none
-    }
-    .toast.show{display:block}
-    .note{
-      margin-top:14px;padding:10px 12px;background:#20192c;border-left:4px solid var(--yellow);
-      color:#ddd5ee;font-size:12px;line-height:1.6
-    }
-    @media(max-width:520px){
-      .days,.weekdays{gap:3px}.day{min-height:60px;padding:5px 3px}.form-grid{grid-template-columns:1fr}
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17112e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="よていクエスト">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<title>よていクエスト Ver.2</title>
+<style>
+:root{
+  --bg:#17112e;--panel:#050507;--panel2:#17131f;--white:#fffdf8;
+  --muted:#c7bfd9;--purple:#7542aa;--pink:#ef74c8;--yellow:#f5d76e;
+  --blue:#91b9ff;--green:#79c879;--red:#7a2939;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--white)}
+body{
+  font-family:"Courier New","Hiragino Kaku Gothic ProN","Yu Gothic",monospace;
+  background:
+    radial-gradient(circle at 18% 16%,rgba(239,116,200,.16),transparent 28%),
+    radial-gradient(circle at 84% 14%,rgba(101,79,220,.20),transparent 32%),
+    linear-gradient(180deg,#130e28,#251141 48%,#101024);
+  image-rendering:pixelated;
+}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px)}
+button,input,textarea,select{font:inherit}
+button{touch-action:manipulation}
+.app{width:min(100%,760px);margin:auto;padding:calc(10px + env(safe-area-inset-top)) 10px calc(94px + env(safe-area-inset-bottom))}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:8px 2px 10px}
+.brand{font-weight:700;letter-spacing:.08em}.status{font-size:12px;color:var(--muted)}
+.panel{background:var(--panel);border:4px solid white;outline:3px solid black;box-shadow:inset 0 0 0 3px #5b5963,7px 7px 0 rgba(0,0,0,.42);border-radius:7px}
+.screen{display:none}.screen.active{display:block}
+.title-panel{padding:14px;text-align:center;margin-bottom:14px}.title-panel h1{font-size:24px;margin:4px 0 8px}.subtitle{font-size:12px;color:var(--muted)}
+.map-panel{padding:12px}
+.map{
+  position:relative;min-height:470px;border:3px solid #c9b893;
+  background:
+    linear-gradient(90deg,transparent 46%,#d0ba75 46% 54%,transparent 54%),
+    linear-gradient(transparent 46%,#d0ba75 46% 54%,transparent 54%),
+    repeating-linear-gradient(45deg,#5f9b57 0 12px,#57924f 12px 24px);
+  overflow:hidden;
+}
+.map:before,.map:after{content:"";position:absolute;background:#6ab1d6;opacity:.8}
+.map:before{left:-8%;right:-8%;height:58px;top:35%;transform:rotate(-4deg)}
+.map:after{top:-8%;bottom:-8%;width:54px;left:18%;transform:rotate(4deg)}
+.place{
+  position:absolute;width:92px;min-height:72px;padding:7px 4px;color:white;background:#16131c;
+  border:3px solid white;outline:2px solid black;border-radius:4px;text-align:center;z-index:2
+}
+.place strong{display:block;font-size:28px;line-height:1.1}.place span{font-size:11px}
+.place.home{left:7%;top:8%}.place.library{right:7%;top:8%}.place.work{left:7%;bottom:8%}.place.park{right:7%;bottom:8%}.place.calendar{left:50%;top:50%;transform:translate(-50%,-50%)}
+.hero{position:absolute;left:50%;top:72%;transform:translate(-50%,-50%);z-index:3;font-size:34px;filter:drop-shadow(2px 3px 0 #000)}
+.dialog{margin-top:12px;padding:12px;line-height:1.7;font-size:13px}
+.header{padding:12px;margin-bottom:14px}.header-row{display:grid;grid-template-columns:44px 1fr 44px;gap:8px;align-items:center}
+.back-btn,.icon-btn,.main-btn,.small-btn,.nav-btn,.dialog-btn{color:white;border:0;cursor:pointer}
+.back-btn,.icon-btn{height:40px;background:#2c1a50;border:3px solid white;outline:2px solid black;border-radius:4px}
+.screen-title{text-align:center;font-size:20px}
+.month-title{text-align:center;font-size:20px}
+.calendar-panel{padding:10px}.weekdays,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.weekdays div{text-align:center;padding:6px 0;font-size:12px;color:#d8d0ed}.weekdays div:first-child{color:#ff9eb2}.weekdays div:last-child{color:var(--blue)}
+.day{min-height:62px;position:relative;padding:5px 3px;color:white;background:#13131a;border:2px solid #6c647c;border-radius:3px;overflow:hidden}
+.day.empty{opacity:.16}.day.today{border-color:var(--yellow);box-shadow:inset 0 0 0 2px #806d19}.day.selected{background:#3c2363;border-color:white}
+.day-number{font-size:14px;font-weight:700}.day:nth-child(7n+1) .day-number{color:#ff9eb2}.day:nth-child(7n) .day-number{color:var(--blue)}
+.event-dot{display:block;margin-top:4px;padding:2px 3px;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:4px solid var(--pink);background:#251a35}
+.content-panel{padding:14px;margin-top:14px}.content-panel h2{font-size:18px;margin:0 0 12px}
+.empty{padding:14px 2px;color:var(--muted)}
+.card{background:var(--panel2);border:2px solid #746d81;padding:10px;margin:8px 0;display:grid;grid-template-columns:1fr auto;gap:8px}
+.card-title{font-size:16px}.card-meta{font-size:12px;color:var(--yellow);margin-bottom:4px}.card-note{font-size:12px;color:var(--muted);white-space:pre-wrap;margin-top:4px}
+.actions{display:flex;gap:6px;align-items:start}.small-btn{padding:6px 8px;background:#34204f;border:2px solid white;outline:1px solid black;font-size:12px}.small-btn.danger{background:#5d2330}
+.main-btn{width:100%;margin-top:12px;padding:13px 14px;font-weight:700;background:linear-gradient(180deg,#7441aa,#4d2c79);border:3px solid white;outline:2px solid black;border-radius:4px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}.stat{padding:12px;text-align:center;background:#1a1524;border:2px solid #716781}.stat strong{display:block;font-size:24px;color:var(--yellow)}
+.progress{height:18px;background:#21192c;border:2px solid #8d829d;margin:8px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,#7d49b2,#ef74c8)}
+.bottom-nav{position:fixed;z-index:20;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,760px);padding:8px 12px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:rgba(6,5,13,.96);border-top:3px solid white}
+.nav-btn{background:#21153e;min-height:54px;border:2px solid #6d5e85;font-size:12px}.nav-btn strong{display:block;font-size:20px}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.78);display:none;align-items:flex-end;justify-content:center;padding:14px}.modal.show{display:flex}
+.modal-card{width:min(100%,620px);padding:16px;max-height:92vh;overflow:auto}.modal-card h2{margin:0 0 14px}
+label{display:block;margin:10px 0 5px;color:#ddd5ee;font-size:13px}
+input,textarea,select{width:100%;padding:11px;color:white;background:#130f19;border:2px solid #9c92ad;border-radius:2px}
+textarea{min-height:80px;resize:vertical}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.dialog-btn{padding:12px;background:#352050;border:3px solid white;outline:2px solid black}.dialog-btn.primary{background:#63348f}
+.toast{position:fixed;left:50%;bottom:94px;transform:translateX(-50%);z-index:80;padding:10px 14px;background:#050507;border:3px solid white;outline:2px solid black;display:none}.toast.show{display:block}
+@media(max-width:520px){.map{min-height:430px}.place{width:82px}.form-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
-  <div class="app">
-    <div class="topbar">
-      <div class="brand">★ よていクエスト</div>
-      <div class="status">オフライン対応</div>
-    </div>
+<div class="app">
+  <div class="topbar"><div class="brand">★ よていクエスト</div><div class="status">Ver.2</div></div>
 
-    <section class="panel header">
-      <div class="month-row">
-        <button class="icon-btn" id="prevMonth" aria-label="前の月">◀</button>
+  <section id="mapScreen" class="screen active">
+    <div class="panel title-panel">
+      <h1>よていタウン</h1>
+      <div class="subtitle">いきたい ばしょを えらんでください。</div>
+    </div>
+    <div class="panel map-panel">
+      <div class="map">
+        <button class="place home" data-screen="todayScreen"><strong>🏠</strong><span>おうち<br>きょうのよてい</span></button>
+        <button class="place library" data-screen="studyScreen"><strong>📚</strong><span>としょかん<br>べんきょう</span></button>
+        <button class="place calendar" data-screen="calendarScreen"><strong>📅</strong><span>やくば<br>よていひょう</span></button>
+        <button class="place work" data-screen="workScreen"><strong>🏥</strong><span>しごとば<br>アイデア</span></button>
+        <button class="place park" data-screen="familyScreen"><strong>🌳</strong><span>こうえん<br>こどものよてい</span></button>
+        <div class="hero">🧑‍💼</div>
+      </div>
+      <div class="panel dialog">▶ たてものを タップすると なかに はいれます。</div>
+    </div>
+  </section>
+
+  <section id="calendarScreen" class="screen">
+    <div class="panel header">
+      <div class="header-row"><button class="back-btn">←</button><div class="screen-title">やくばの よていひょう</div><span></span></div>
+    </div>
+    <div class="panel header">
+      <div class="header-row">
+        <button class="icon-btn" id="prevMonth">◀</button>
         <div class="month-title" id="monthTitle"></div>
-        <button class="icon-btn" id="nextMonth" aria-label="次の月">▶</button>
+        <button class="icon-btn" id="nextMonth">▶</button>
       </div>
-      <div class="quest-line">ひづけを えらんでください。</div>
-    </section>
-
-    <section class="panel calendar">
-      <div class="weekdays">
-        <div>にち</div><div>げつ</div><div>か</div><div>すい</div><div>もく</div><div>きん</div><div>ど</div>
-      </div>
+    </div>
+    <div class="panel calendar-panel">
+      <div class="weekdays"><div>にち</div><div>げつ</div><div>か</div><div>すい</div><div>もく</div><div>きん</div><div>ど</div></div>
       <div class="days" id="calendarDays"></div>
-    </section>
-
-    <section class="panel details">
-      <h2 class="detail-title" id="detailTitle"></h2>
-      <div id="eventList"></div>
-      <button class="main-btn" id="addEvent">▶ よていを とうろくする</button>
-      <div class="note">予定データはこのiPhone内に保存されます。他の人が同じURLを開いても、あなたの予定は表示されません。</div>
-    </section>
-  </div>
-
-  <nav class="bottom-nav">
-    <button class="nav-btn" id="todayBtn"><strong>⌂</strong>きょう</button>
-    <button class="nav-btn" id="newBtn"><strong>＋</strong>とうろく</button>
-    <button class="nav-btn" id="settingsBtn"><strong>⚙</strong>せってい</button>
-  </nav>
-
-  <div class="modal" id="eventModal">
-    <div class="panel modal-card">
-      <h2 id="modalTitle">よていを とうろく</h2>
-      <form id="eventForm">
-        <input type="hidden" id="eventId">
-        <label for="eventDate">ひづけ</label>
-        <input type="date" id="eventDate" required>
-        <div class="form-grid">
-          <div>
-            <label for="eventTime">じかん</label>
-            <input type="time" id="eventTime">
-          </div>
-          <div>
-            <label for="eventCategory">しゅるい</label>
-            <select id="eventCategory">
-              <option>かぞく</option><option>しごと</option><option>びょういん</option>
-              <option>ほいくえん</option><option>じぶん</option><option>そのほか</option>
-            </select>
-          </div>
-        </div>
-        <label for="eventName">よていの なまえ</label>
-        <input type="text" id="eventName" maxlength="40" placeholder="れい：びょういん" required>
-        <label for="eventNote">メモ</label>
-        <textarea id="eventNote" maxlength="200" placeholder="もちもの、ばしょ など"></textarea>
-        <div class="modal-actions">
-          <button type="button" class="dialog-btn" id="cancelModal">キャンセル</button>
-          <button type="submit" class="dialog-btn primary">とうろくする</button>
-        </div>
-      </form>
     </div>
-  </div>
-
-  <div class="modal" id="settingsModal">
-    <div class="panel modal-card">
-      <h2>せってい</h2>
-      <p style="color:#cfc7df;line-height:1.7">
-        機種変更やSafariのデータ削除に備えて、予定データをコピーできます。
-      </p>
-      <button class="main-btn" id="exportBtn">バックアップを コピー</button>
-      <button class="main-btn" id="deleteAllBtn" style="background:#642737">ぜんぶ けす</button>
-      <button class="main-btn" id="closeSettings">もどる</button>
+    <div class="panel content-panel">
+      <h2 id="detailTitle"></h2><div id="eventList"></div>
+      <button class="main-btn" id="addEvent">▶ よていを とうろく</button>
     </div>
+  </section>
+
+  <section id="todayScreen" class="screen">
+    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">おうち</div><span></span></div></div>
+    <div class="panel content-panel">
+      <h2>きょうの クエスト</h2>
+      <div id="todayList"></div>
+      <button class="main-btn" data-screen="calendarScreen">よていひょうを ひらく</button>
+    </div>
+  </section>
+
+  <section id="studyScreen" class="screen">
+    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">としょかん</div><span></span></div></div>
+    <div class="panel content-panel">
+      <h2>べんきょうきろく</h2>
+      <div class="stats"><div class="stat"><strong id="studyTotal">0</strong>ふん</div><div class="stat"><strong id="studyCount">0</strong>かい</div></div>
+      <div id="studyList"></div>
+      <button class="main-btn" id="addStudy">▶ べんきょうを きろく</button>
+    </div>
+  </section>
+
+  <section id="readingScreen" class="screen">
+    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">ほんや</div><span></span></div></div>
+    <div class="panel content-panel">
+      <h2>どくしょ 100さつクエスト</h2>
+      <div class="progress"><span id="readingProgress"></span></div>
+      <div class="stats"><div class="stat"><strong id="readingCount">0</strong>さつ</div><div class="stat"><strong>100</strong>もくひょう</div></div>
+      <div id="readingList"></div>
+      <button class="main-btn" id="addBook">▶ よみおえた ほんを とうろく</button>
+    </div>
+  </section>
+
+  <section id="workScreen" class="screen">
+    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">しごとば</div><span></span></div></div>
+    <div class="panel content-panel">
+      <h2>かいぜん アイデア</h2><div id="workList"></div>
+      <button class="main-btn" id="addWork">▶ アイデアを とうろく</button>
+    </div>
+  </section>
+
+  <section id="familyScreen" class="screen">
+    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">こうえん</div><span></span></div></div>
+    <div class="panel content-panel">
+      <h2>こどもの よてい</h2><div id="familyList"></div>
+      <button class="main-btn" id="addFamily">▶ よていを とうろく</button>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-btn" data-screen="mapScreen"><strong>🗺️</strong>まっぷ</button>
+  <button class="nav-btn" data-screen="calendarScreen"><strong>📅</strong>よてい</button>
+  <button class="nav-btn" data-screen="readingScreen"><strong>📖</strong>どくしょ</button>
+</nav>
+
+<div class="modal" id="genericModal">
+  <div class="panel modal-card">
+    <h2 id="modalTitle"></h2>
+    <form id="genericForm">
+      <div id="modalFields"></div>
+      <div class="modal-actions"><button type="button" class="dialog-btn" id="cancelModal">キャンセル</button><button type="submit" class="dialog-btn primary">とうろく</button></div>
+    </form>
   </div>
+</div>
+<div class="toast" id="toast"></div>
 
-  <div class="toast" id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const KEYS={events:"yq_events_v2",study:"yq_study_v2",books:"yq_books_v2",work:"yq_work_v2",family:"yq_family_v2"};
+let data={};
+for(const [k,v] of Object.entries(KEYS)) data[k]=JSON.parse(localStorage.getItem(v)||"[]");
+let viewDate=new Date(),selectedDate=fmt(new Date()),modalMode="",editingId="";
+function fmt(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function pdate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
+function jp(s){const d=pdate(s),w=["にち","げつ","か","すい","もく","きん","ど"][d.getDay()];return `${d.getFullYear()}ねん ${d.getMonth()+1}がつ ${d.getDate()}にち（${w}）`}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
+function uid(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
+function save(k){localStorage.setItem(KEYS[k],JSON.stringify(data[k]))}
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1500)}
+function showScreen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0);renderAll()}
+document.querySelectorAll("[data-screen]").forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
+document.querySelectorAll(".back-btn").forEach(b=>b.onclick=()=>showScreen("mapScreen"));
 
-  <script>
-    const KEY="yoteiQuestEventsV1";
-    const $=id=>document.getElementById(id);
-    let events=JSON.parse(localStorage.getItem(KEY)||"[]");
-    let viewDate=new Date();
-    let selectedDate=fmt(new Date());
+function renderCalendar(){
+ const y=viewDate.getFullYear(),m=viewDate.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0);
+ $("monthTitle").textContent=`${y}ねん ${m+1}がつ`;$("calendarDays").innerHTML="";
+ for(let i=0;i<first.getDay();i++){const e=document.createElement("div");e.className="day empty";$("calendarDays").appendChild(e)}
+ for(let day=1;day<=last.getDate();day++){
+  const key=fmt(new Date(y,m,day)),list=data.events.filter(e=>e.date===key).sort((a,b)=>(a.time||"99").localeCompare(b.time||"99"));
+  const cell=document.createElement("button");cell.className="day";if(key===fmt(new Date()))cell.classList.add("today");if(key===selectedDate)cell.classList.add("selected");
+  cell.innerHTML=`<span class="day-number">${day}</span>`;list.slice(0,2).forEach(ev=>{const x=document.createElement("span");x.className="event-dot";x.textContent=`${ev.time?ev.time+" ":""}${ev.name}`;cell.appendChild(x)});
+  cell.onclick=()=>{selectedDate=key;renderCalendar()};$("calendarDays").appendChild(cell)
+ }
+ $("detailTitle").textContent=jp(selectedDate);renderCards("eventList",data.events.filter(x=>x.date===selectedDate),"events");
+}
+function renderCards(target,list,type){
+ const el=$(target);el.innerHTML=list.length?"":"<div class='empty'>まだ きろくが ありません。</div>";
+ list.forEach(item=>{
+  const c=document.createElement("div");c.className="card";
+  let meta="",title="",note="";
+  if(type==="events"||type==="family"){meta=`${item.date}${item.time?" "+item.time:""}`;title=item.name;note=item.note}
+  if(type==="study"){meta=`${item.date} ／ ${item.minutes}ふん`;title=item.subject;note=item.note}
+  if(type==="books"){meta=item.date;title=item.title;note=item.author}
+  if(type==="work"){meta=item.date;title=item.title;note=item.note}
+  c.innerHTML=`<div><div class="card-meta">${esc(meta)}</div><div class="card-title">${esc(title)}</div>${note?`<div class="card-note">${esc(note)}</div>`:""}</div><div class="actions"><button class="small-btn danger">けす</button></div>`;
+  c.querySelector("button").onclick=()=>{if(confirm("けしますか？")){data[type]=data[type].filter(x=>x.id!==item.id);save(type);renderAll()}};
+  el.appendChild(c)
+ })
+}
+function renderAll(){
+ renderCalendar();
+ const today=fmt(new Date());renderCards("todayList",data.events.filter(x=>x.date===today),"events");
+ renderCards("studyList",data.study.slice().reverse(),"study");
+ $("studyTotal").textContent=data.study.reduce((a,b)=>a+Number(b.minutes||0),0);$("studyCount").textContent=data.study.length;
+ renderCards("readingList",data.books.slice().reverse(),"books");$("readingCount").textContent=data.books.length;$("readingProgress").style.width=Math.min(100,data.books.length)+"%";
+ renderCards("workList",data.work.slice().reverse(),"work");
+ renderCards("familyList",data.family.slice().sort((a,b)=>a.date.localeCompare(b.date)),"family");
+}
+$("prevMonth").onclick=()=>{viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1);selectedDate=fmt(viewDate);renderCalendar()}
+$("nextMonth").onclick=()=>{viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1);selectedDate=fmt(viewDate);renderCalendar()}
 
-    function fmt(d){
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-    }
-    function pdate(s){
-      const [y,m,d]=s.split("-").map(Number);
-      return new Date(y,m-1,d);
-    }
-    function jp(s){
-      const d=pdate(s);
-      const w=["にち","げつ","か","すい","もく","きん","ど"][d.getDay()];
-      return `${d.getFullYear()}ねん ${d.getMonth()+1}がつ ${d.getDate()}にち（${w}）`;
-    }
-    function save(){localStorage.setItem(KEY,JSON.stringify(events))}
-    function esc(s){
-      return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
-    }
-    function toast(t){
-      $("toast").textContent=t;
-      $("toast").classList.add("show");
-      setTimeout(()=>$("toast").classList.remove("show"),1700);
-    }
-
-    function render(){
-      const y=viewDate.getFullYear(),m=viewDate.getMonth();
-      const first=new Date(y,m,1),last=new Date(y,m+1,0);
-      $("monthTitle").textContent=`${y}ねん ${m+1}がつ`;
-      $("calendarDays").innerHTML="";
-
-      for(let i=0;i<first.getDay();i++){
-        const e=document.createElement("div");
-        e.className="day empty";
-        $("calendarDays").appendChild(e);
-      }
-
-      for(let day=1;day<=last.getDate();day++){
-        const key=fmt(new Date(y,m,day));
-        const list=events.filter(e=>e.date===key)
-          .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
-
-        const cell=document.createElement("button");
-        cell.type="button";
-        cell.className="day";
-        if(key===fmt(new Date()))cell.classList.add("today");
-        if(key===selectedDate)cell.classList.add("selected");
-        cell.innerHTML=`<span class="day-number">${day}</span>`;
-
-        list.slice(0,2).forEach(ev=>{
-          const x=document.createElement("span");
-          x.className="event-dot";
-          x.textContent=`${ev.time?ev.time+" ":""}${ev.name}`;
-          cell.appendChild(x);
-        });
-
-        if(list.length>2){
-          const c=document.createElement("span");
-          c.className="event-count";
-          c.textContent=`ほか${list.length-2}けん`;
-          cell.appendChild(c);
-        }
-
-        cell.onclick=()=>{selectedDate=key;render()};
-        $("calendarDays").appendChild(cell);
-      }
-
-      $("detailTitle").textContent=jp(selectedDate);
-      const list=events.filter(e=>e.date===selectedDate)
-        .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
-
-      $("eventList").innerHTML=list.length?"":"<div class='empty-message'>このひの よていは ありません。</div>";
-
-      list.forEach(ev=>{
-        const card=document.createElement("div");
-        card.className="event-card";
-        card.innerHTML=`
-          <div>
-            <div class="event-time">${ev.time||"じかんみてい"} ／ ${esc(ev.category)}</div>
-            <div class="event-name">${esc(ev.name)}</div>
-            ${ev.note?`<div class="event-note">${esc(ev.note)}</div>`:""}
-          </div>
-          <div class="event-actions">
-            <button class="small-btn edit">へんしゅう</button>
-            <button class="small-btn danger del">けす</button>
-          </div>`;
-
-        card.querySelector(".edit").onclick=()=>openModal(ev);
-        card.querySelector(".del").onclick=()=>{
-          if(confirm(`「${ev.name}」を けしますか？`)){
-            events=events.filter(x=>x.id!==ev.id);
-            save();render();toast("けしました。");
-          }
-        };
-        $("eventList").appendChild(card);
-      });
-    }
-
-    function openModal(ev=null){
-      $("modalTitle").textContent=ev?"よていを へんしゅう":"よていを とうろく";
-      $("eventId").value=ev?.id||"";
-      $("eventDate").value=ev?.date||selectedDate;
-      $("eventTime").value=ev?.time||"";
-      $("eventCategory").value=ev?.category||"かぞく";
-      $("eventName").value=ev?.name||"";
-      $("eventNote").value=ev?.note||"";
-      $("eventModal").classList.add("show");
-    }
-    function closeModal(){$("eventModal").classList.remove("show")}
-
-    $("prevMonth").onclick=()=>{
-      viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1);
-      selectedDate=fmt(viewDate);render();
-    };
-    $("nextMonth").onclick=()=>{
-      viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1);
-      selectedDate=fmt(viewDate);render();
-    };
-    $("todayBtn").onclick=()=>{
-      viewDate=new Date();selectedDate=fmt(new Date());render();
-    };
-    $("addEvent").onclick=$("newBtn").onclick=()=>openModal();
-    $("cancelModal").onclick=closeModal;
-    $("eventModal").onclick=e=>{if(e.target===$("eventModal"))closeModal()};
-
-    $("eventForm").onsubmit=e=>{
-      e.preventDefault();
-      const id=$("eventId").value;
-      const item={
-        id:id||(crypto.randomUUID?crypto.randomUUID():String(Date.now())),
-        date:$("eventDate").value,
-        time:$("eventTime").value,
-        category:$("eventCategory").value,
-        name:$("eventName").value.trim(),
-        note:$("eventNote").value.trim()
-      };
-      events=id?events.map(x=>x.id===id?item:x):[...events,item];
-      selectedDate=item.date;viewDate=pdate(item.date);
-      save();closeModal();render();toast(id?"へんしゅうしました。":"とうろくしました。");
-    };
-
-    $("settingsBtn").onclick=()=>$("settingsModal").classList.add("show");
-    $("closeSettings").onclick=()=>$("settingsModal").classList.remove("show");
-    $("settingsModal").onclick=e=>{if(e.target===$("settingsModal"))$("settingsModal").classList.remove("show")};
-
-    $("deleteAllBtn").onclick=()=>{
-      if(confirm("すべての よていを けしますか？")){
-        events=[];save();render();$("settingsModal").classList.remove("show");toast("すべて けしました。");
-      }
-    };
-    $("exportBtn").onclick=async()=>{
-      const t=JSON.stringify(events,null,2);
-      try{await navigator.clipboard.writeText(t);toast("コピーしました。")}
-      catch{prompt("このデータをコピーしてください。",t)}
-    };
-
-    if("serviceWorker" in navigator){
-      window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
-    }
-    render();
-  </script>
+function openModal(mode){
+ modalMode=mode;editingId="";let title="",fields="";
+ if(mode==="events"){title="よていを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${selectedDate}" required><div class="form-grid"><div><label>じかん</label><input id="fTime" type="time"></div><div><label>しゅるい</label><select id="fCat"><option>かぞく</option><option>しごと</option><option>びょういん</option><option>ほいくえん</option><option>じぶん</option></select></div></div><label>なまえ</label><input id="fTitle" required><label>メモ</label><textarea id="fNote"></textarea>`}
+ if(mode==="study"){title="べんきょうを きろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>かもく</label><input id="fTitle" placeholder="れい：労基法" required><label>べんきょうじかん（ふん）</label><input id="fMinutes" type="number" min="1" value="30" required><label>メモ</label><textarea id="fNote"></textarea>`}
+ if(mode==="books"){title="ほんを とうろく";fields=`<label>よみおえたひ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>ほんの なまえ</label><input id="fTitle" required><label>ちょしゃ</label><input id="fAuthor">`}
+ if(mode==="work"){title="アイデアを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>タイトル</label><input id="fTitle" required><label>ないよう</label><textarea id="fNote"></textarea>`}
+ if(mode==="family"){title="こどもの よていを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>じかん</label><input id="fTime" type="time"><label>よてい</label><input id="fTitle" required><label>メモ</label><textarea id="fNote"></textarea>`}
+ $("modalTitle").textContent=title;$("modalFields").innerHTML=fields;$("genericModal").classList.add("show")
+}
+$("addEvent").onclick=()=>openModal("events");$("addStudy").onclick=()=>openModal("study");$("addBook").onclick=()=>openModal("books");$("addWork").onclick=()=>openModal("work");$("addFamily").onclick=()=>openModal("family");
+$("cancelModal").onclick=()=>$("genericModal").classList.remove("show");
+$("genericModal").onclick=e=>{if(e.target===$("genericModal"))$("genericModal").classList.remove("show")};
+$("genericForm").onsubmit=e=>{
+ e.preventDefault();let item={id:uid()};
+ if(modalMode==="events")item={...item,date:$("fDate").value,time:$("fTime").value,category:$("fCat").value,name:$("fTitle").value.trim(),note:$("fNote").value.trim()};
+ if(modalMode==="study")item={...item,date:$("fDate").value,subject:$("fTitle").value.trim(),minutes:Number($("fMinutes").value),note:$("fNote").value.trim()};
+ if(modalMode==="books")item={...item,date:$("fDate").value,title:$("fTitle").value.trim(),author:$("fAuthor").value.trim()};
+ if(modalMode==="work")item={...item,date:$("fDate").value,title:$("fTitle").value.trim(),note:$("fNote").value.trim()};
+ if(modalMode==="family")item={...item,date:$("fDate").value,time:$("fTime").value,name:$("fTitle").value.trim(),note:$("fNote").value.trim()};
+ data[modalMode].push(item);save(modalMode);$("genericModal").classList.remove("show");renderAll();toast("とうろくしました。")
+};
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+renderAll();
+</script>
 </body>
 </html>
