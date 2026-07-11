@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17112e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="よていクエスト">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <title>よていクエスト</title>
+  <style>
+    :root{
+      --bg1:#130e28; --bg2:#251141; --panel:#050507; --panel2:#15131e;
+      --white:#fffdf8; --muted:#c7bfd9; --purple:#7542aa; --pink:#ef74c8;
+      --yellow:#f5d76e; --red:#7a2939; --blue:#91b9ff;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg1);color:var(--white)}
+    body{
+      font-family:"Courier New","Hiragino Kaku Gothic ProN","Yu Gothic",monospace;
+      background:
+        radial-gradient(circle at 18% 18%,rgba(239,116,200,.18),transparent 28%),
+        radial-gradient(circle at 84% 16%,rgba(101,79,220,.20),transparent 32%),
+        linear-gradient(180deg,var(--bg1),var(--bg2) 48%,#101024);
+      image-rendering:pixelated;
+    }
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;
+      background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px)
+    }
+    button,input,textarea,select{font:inherit}
+    button{touch-action:manipulation}
+    .app{
+      width:min(100%,760px);margin:0 auto;
+      padding:calc(10px + env(safe-area-inset-top)) 10px calc(96px + env(safe-area-inset-bottom))
+    }
+    .topbar{display:flex;justify-content:space-between;align-items:center;padding:8px 2px 10px}
+    .brand{font-weight:700;letter-spacing:.08em}
+    .status{font-size:12px;color:var(--muted)}
+    .panel{
+      background:var(--panel);border:4px solid white;outline:3px solid black;
+      box-shadow:inset 0 0 0 3px #5b5963,7px 7px 0 rgba(0,0,0,.42);
+      border-radius:7px
+    }
+    .header{padding:14px;background:linear-gradient(180deg,#09090d,#11101b)}
+    .month-row{display:grid;grid-template-columns:48px 1fr 48px;gap:10px;align-items:center}
+    .month-title{text-align:center;font-size:clamp(20px,5vw,30px);letter-spacing:.08em}
+    .icon-btn,.main-btn,.small-btn,.nav-btn,.dialog-btn{
+      color:white;border:0;cursor:pointer
+    }
+    .icon-btn{
+      height:42px;background:#2c1a50;border:3px solid white;outline:2px solid black;
+      border-radius:4px;font-size:20px
+    }
+    .quest-line{text-align:center;color:#ddd5ef;font-size:13px;margin-top:10px}
+    .calendar{margin-top:14px;padding:10px}
+    .weekdays,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+    .weekdays div{text-align:center;padding:6px 0;font-size:12px;color:#d8d0ed}
+    .weekdays div:first-child{color:#ff9eb2}.weekdays div:last-child{color:var(--blue)}
+    .day{
+      min-height:64px;position:relative;padding:6px 4px;color:white;background:#13131a;
+      border:2px solid #6c647c;border-radius:3px;overflow:hidden;cursor:pointer
+    }
+    .day.empty{opacity:.16;cursor:default}
+    .day.today{border-color:var(--yellow);box-shadow:inset 0 0 0 2px #806d19}
+    .day.selected{background:#3c2363;border-color:white}
+    .day-number{font-size:14px;font-weight:700}
+    .day:nth-child(7n+1) .day-number{color:#ff9eb2}
+    .day:nth-child(7n) .day-number{color:var(--blue)}
+    .event-dot{
+      display:block;margin-top:5px;padding:3px 4px;font-size:9px;white-space:nowrap;
+      overflow:hidden;text-overflow:ellipsis;border-left:4px solid var(--pink);background:#251a35
+    }
+    .event-count{position:absolute;right:4px;bottom:3px;font-size:9px;color:#d8d0ed}
+    .details{margin-top:14px;padding:14px}
+    .detail-title{font-size:18px;margin:0 0 12px}
+    .empty-message{padding:14px 2px;color:var(--muted)}
+    .event-card{
+      background:#17131f;border:2px solid #746d81;padding:10px;margin:8px 0;
+      display:grid;grid-template-columns:1fr auto;gap:8px
+    }
+    .event-time{color:var(--yellow);font-size:13px}
+    .event-name{font-size:16px;margin-top:3px}
+    .event-note{color:var(--muted);font-size:12px;white-space:pre-wrap;margin-top:4px}
+    .event-actions{display:flex;gap:6px;align-items:start}
+    .small-btn{padding:6px 8px;background:#34204f;border:2px solid white;outline:1px solid black;font-size:12px}
+    .small-btn.danger{background:#5d2330}
+    .main-btn{
+      width:100%;margin-top:12px;padding:13px 14px;font-weight:700;
+      background:linear-gradient(180deg,#7441aa,#4d2c79);
+      border:3px solid white;outline:2px solid black;border-radius:4px
+    }
+    .bottom-nav{
+      position:fixed;z-index:20;left:50%;bottom:0;transform:translateX(-50%);
+      width:min(100%,760px);padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+      display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+      background:rgba(6,5,13,.96);border-top:3px solid white
+    }
+    .nav-btn{background:#21153e;min-height:54px;border:2px solid #6d5e85;font-size:12px}
+    .nav-btn strong{display:block;font-size:20px;margin-bottom:2px}
+    .modal{
+      position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.78);display:none;
+      align-items:flex-end;justify-content:center;padding:14px
+    }
+    .modal.show{display:flex}
+    .modal-card{width:min(100%,620px);padding:16px;max-height:92vh;overflow:auto}
+    .modal-card h2{margin:0 0 14px}
+    label{display:block;margin:10px 0 5px;color:#ddd5ee;font-size:13px}
+    input,textarea,select{
+      width:100%;padding:11px;color:white;background:#130f19;border:2px solid #9c92ad;border-radius:2px
+    }
+    textarea{min-height:86px;resize:vertical}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+    .dialog-btn{padding:12px;background:#352050;border:3px solid white;outline:2px solid black}
+    .dialog-btn.primary{background:#63348f}
+    .toast{
+      position:fixed;left:50%;bottom:94px;transform:translateX(-50%);z-index:80;
+      padding:10px 14px;background:#050507;border:3px solid white;outline:2px solid black;display:none
+    }
+    .toast.show{display:block}
+    .note{
+      margin-top:14px;padding:10px 12px;background:#20192c;border-left:4px solid var(--yellow);
+      color:#ddd5ee;font-size:12px;line-height:1.6
+    }
+    @media(max-width:520px){
+      .days,.weekdays{gap:3px}.day{min-height:60px;padding:5px 3px}.form-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">★ よていクエスト</div>
+      <div class="status">オフライン対応</div>
+    </div>
+
+    <section class="panel header">
+      <div class="month-row">
+        <button class="icon-btn" id="prevMonth" aria-label="前の月">◀</button>
+        <div class="month-title" id="monthTitle"></div>
+        <button class="icon-btn" id="nextMonth" aria-label="次の月">▶</button>
+      </div>
+      <div class="quest-line">ひづけを えらんでください。</div>
+    </section>
+
+    <section class="panel calendar">
+      <div class="weekdays">
+        <div>にち</div><div>げつ</div><div>か</div><div>すい</div><div>もく</div><div>きん</div><div>ど</div>
+      </div>
+      <div class="days" id="calendarDays"></div>
+    </section>
+
+    <section class="panel details">
+      <h2 class="detail-title" id="detailTitle"></h2>
+      <div id="eventList"></div>
+      <button class="main-btn" id="addEvent">▶ よていを とうろくする</button>
+      <div class="note">予定データはこのiPhone内に保存されます。他の人が同じURLを開いても、あなたの予定は表示されません。</div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" id="todayBtn"><strong>⌂</strong>きょう</button>
+    <button class="nav-btn" id="newBtn"><strong>＋</strong>とうろく</button>
+    <button class="nav-btn" id="settingsBtn"><strong>⚙</strong>せってい</button>
+  </nav>
+
+  <div class="modal" id="eventModal">
+    <div class="panel modal-card">
+      <h2 id="modalTitle">よていを とうろく</h2>
+      <form id="eventForm">
+        <input type="hidden" id="eventId">
+        <label for="eventDate">ひづけ</label>
+        <input type="date" id="eventDate" required>
+        <div class="form-grid">
+          <div>
+            <label for="eventTime">じかん</label>
+            <input type="time" id="eventTime">
+          </div>
+          <div>
+            <label for="eventCategory">しゅるい</label>
+            <select id="eventCategory">
+              <option>かぞく</option><option>しごと</option><option>びょういん</option>
+              <option>ほいくえん</option><option>じぶん</option><option>そのほか</option>
+            </select>
+          </div>
+        </div>
+        <label for="eventName">よていの なまえ</label>
+        <input type="text" id="eventName" maxlength="40" placeholder="れい：びょういん" required>
+        <label for="eventNote">メモ</label>
+        <textarea id="eventNote" maxlength="200" placeholder="もちもの、ばしょ など"></textarea>
+        <div class="modal-actions">
+          <button type="button" class="dialog-btn" id="cancelModal">キャンセル</button>
+          <button type="submit" class="dialog-btn primary">とうろくする</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="panel modal-card">
+      <h2>せってい</h2>
+      <p style="color:#cfc7df;line-height:1.7">
+        機種変更やSafariのデータ削除に備えて、予定データをコピーできます。
+      </p>
+      <button class="main-btn" id="exportBtn">バックアップを コピー</button>
+      <button class="main-btn" id="deleteAllBtn" style="background:#642737">ぜんぶ けす</button>
+      <button class="main-btn" id="closeSettings">もどる</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const KEY="yoteiQuestEventsV1";
+    const $=id=>document.getElementById(id);
+    let events=JSON.parse(localStorage.getItem(KEY)||"[]");
+    let viewDate=new Date();
+    let selectedDate=fmt(new Date());
+
+    function fmt(d){
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
+    function pdate(s){
+      const [y,m,d]=s.split("-").map(Number);
+      return new Date(y,m-1,d);
+    }
+    function jp(s){
+      const d=pdate(s);
+      const w=["にち","げつ","か","すい","もく","きん","ど"][d.getDay()];
+      return `${d.getFullYear()}ねん ${d.getMonth()+1}がつ ${d.getDate()}にち（${w}）`;
+    }
+    function save(){localStorage.setItem(KEY,JSON.stringify(events))}
+    function esc(s){
+      return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+    }
+    function toast(t){
+      $("toast").textContent=t;
+      $("toast").classList.add("show");
+      setTimeout(()=>$("toast").classList.remove("show"),1700);
+    }
+
+    function render(){
+      const y=viewDate.getFullYear(),m=viewDate.getMonth();
+      const first=new Date(y,m,1),last=new Date(y,m+1,0);
+      $("monthTitle").textContent=`${y}ねん ${m+1}がつ`;
+      $("calendarDays").innerHTML="";
+
+      for(let i=0;i<first.getDay();i++){
+        const e=document.createElement("div");
+        e.className="day empty";
+        $("calendarDays").appendChild(e);
+      }
+
+      for(let day=1;day<=last.getDate();day++){
+        const key=fmt(new Date(y,m,day));
+        const list=events.filter(e=>e.date===key)
+          .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+
+        const cell=document.createElement("button");
+        cell.type="button";
+        cell.className="day";
+        if(key===fmt(new Date()))cell.classList.add("today");
+        if(key===selectedDate)cell.classList.add("selected");
+        cell.innerHTML=`<span class="day-number">${day}</span>`;
+
+        list.slice(0,2).forEach(ev=>{
+          const x=document.createElement("span");
+          x.className="event-dot";
+          x.textContent=`${ev.time?ev.time+" ":""}${ev.name}`;
+          cell.appendChild(x);
+        });
+
+        if(list.length>2){
+          const c=document.createElement("span");
+          c.className="event-count";
+          c.textContent=`ほか${list.length-2}けん`;
+          cell.appendChild(c);
+        }
+
+        cell.onclick=()=>{selectedDate=key;render()};
+        $("calendarDays").appendChild(cell);
+      }
+
+      $("detailTitle").textContent=jp(selectedDate);
+      const list=events.filter(e=>e.date===selectedDate)
+        .sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+
+      $("eventList").innerHTML=list.length?"":"<div class='empty-message'>このひの よていは ありません。</div>";
+
+      list.forEach(ev=>{
+        const card=document.createElement("div");
+        card.className="event-card";
+        card.innerHTML=`
+          <div>
+            <div class="event-time">${ev.time||"じかんみてい"} ／ ${esc(ev.category)}</div>
+            <div class="event-name">${esc(ev.name)}</div>
+            ${ev.note?`<div class="event-note">${esc(ev.note)}</div>`:""}
+          </div>
+          <div class="event-actions">
+            <button class="small-btn edit">へんしゅう</button>
+            <button class="small-btn danger del">けす</button>
+          </div>`;
+
+        card.querySelector(".edit").onclick=()=>openModal(ev);
+        card.querySelector(".del").onclick=()=>{
+          if(confirm(`「${ev.name}」を けしますか？`)){
+            events=events.filter(x=>x.id!==ev.id);
+            save();render();toast("けしました。");
+          }
+        };
+        $("eventList").appendChild(card);
+      });
+    }
+
+    function openModal(ev=null){
+      $("modalTitle").textContent=ev?"よていを へんしゅう":"よていを とうろく";
+      $("eventId").value=ev?.id||"";
+      $("eventDate").value=ev?.date||selectedDate;
+      $("eventTime").value=ev?.time||"";
+      $("eventCategory").value=ev?.category||"かぞく";
+      $("eventName").value=ev?.name||"";
+      $("eventNote").value=ev?.note||"";
+      $("eventModal").classList.add("show");
+    }
+    function closeModal(){$("eventModal").classList.remove("show")}
+
+    $("prevMonth").onclick=()=>{
+      viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1);
+      selectedDate=fmt(viewDate);render();
+    };
+    $("nextMonth").onclick=()=>{
+      viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1);
+      selectedDate=fmt(viewDate);render();
+    };
+    $("todayBtn").onclick=()=>{
+      viewDate=new Date();selectedDate=fmt(new Date());render();
+    };
+    $("addEvent").onclick=$("newBtn").onclick=()=>openModal();
+    $("cancelModal").onclick=closeModal;
+    $("eventModal").onclick=e=>{if(e.target===$("eventModal"))closeModal()};
+
+    $("eventForm").onsubmit=e=>{
+      e.preventDefault();
+      const id=$("eventId").value;
+      const item={
+        id:id||(crypto.randomUUID?crypto.randomUUID():String(Date.now())),
+        date:$("eventDate").value,
+        time:$("eventTime").value,
+        category:$("eventCategory").value,
+        name:$("eventName").value.trim(),
+        note:$("eventNote").value.trim()
+      };
+      events=id?events.map(x=>x.id===id?item:x):[...events,item];
+      selectedDate=item.date;viewDate=pdate(item.date);
+      save();closeModal();render();toast(id?"へんしゅうしました。":"とうろくしました。");
+    };
+
+    $("settingsBtn").onclick=()=>$("settingsModal").classList.add("show");
+    $("closeSettings").onclick=()=>$("settingsModal").classList.remove("show");
+    $("settingsModal").onclick=e=>{if(e.target===$("settingsModal"))$("settingsModal").classList.remove("show")};
+
+    $("deleteAllBtn").onclick=()=>{
+      if(confirm("すべての よていを けしますか？")){
+        events=[];save();render();$("settingsModal").classList.remove("show");toast("すべて けしました。");
+      }
+    };
+    $("exportBtn").onclick=async()=>{
+      const t=JSON.stringify(events,null,2);
+      try{await navigator.clipboard.writeText(t);toast("コピーしました。")}
+      catch{prompt("このデータをコピーしてください。",t)}
+    };
+
+    if("serviceWorker" in navigator){
+      window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+    }
+    render();
+  </script>
+</body>
+</html>
