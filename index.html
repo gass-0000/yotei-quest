@@ -3,238 +3,244 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#17112e">
+<meta name="theme-color" content="#0a0a0a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="よていクエスト">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<title>よていクエスト Ver.2</title>
+<title>よていクエスト Ver.3</title>
 <style>
 :root{
-  --bg:#17112e;--panel:#050507;--panel2:#17131f;--white:#fffdf8;
-  --muted:#c7bfd9;--purple:#7542aa;--pink:#ef74c8;--yellow:#f5d76e;
-  --blue:#91b9ff;--green:#79c879;--red:#7a2939;
+  --bg:#080808;--panel:#050505;--white:#fff8dc;--muted:#cfc8b8;
+  --line:#e8dec5;--gold:#cbb88a;--purple:#56347a;--danger:#6b2430;
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--white)}
 body{
   font-family:"Courier New","Hiragino Kaku Gothic ProN","Yu Gothic",monospace;
-  background:
-    radial-gradient(circle at 18% 16%,rgba(239,116,200,.16),transparent 28%),
-    radial-gradient(circle at 84% 14%,rgba(101,79,220,.20),transparent 32%),
-    linear-gradient(180deg,#130e28,#251141 48%,#101024);
   image-rendering:pixelated;
 }
-body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px)}
 button,input,textarea,select{font:inherit}
 button{touch-action:manipulation}
-.app{width:min(100%,760px);margin:auto;padding:calc(10px + env(safe-area-inset-top)) 10px calc(94px + env(safe-area-inset-bottom))}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:8px 2px 10px}
-.brand{font-weight:700;letter-spacing:.08em}.status{font-size:12px;color:var(--muted)}
-.panel{background:var(--panel);border:4px solid white;outline:3px solid black;box-shadow:inset 0 0 0 3px #5b5963,7px 7px 0 rgba(0,0,0,.42);border-radius:7px}
+.app{
+  width:min(100%,760px);margin:0 auto;
+  padding:calc(8px + env(safe-area-inset-top)) 8px calc(92px + env(safe-area-inset-bottom));
+}
 .screen{display:none}.screen.active{display:block}
-.title-panel{padding:14px;text-align:center;margin-bottom:14px}.title-panel h1{font-size:24px;margin:4px 0 8px}.subtitle{font-size:12px;color:var(--muted)}
-.map-panel{padding:12px}
-.map{
-  position:relative;min-height:470px;border:3px solid #c9b893;
-  background:
-    linear-gradient(90deg,transparent 46%,#d0ba75 46% 54%,transparent 54%),
-    linear-gradient(transparent 46%,#d0ba75 46% 54%,transparent 54%),
-    repeating-linear-gradient(45deg,#5f9b57 0 12px,#57924f 12px 24px);
-  overflow:hidden;
+.pixel-window{
+  background:var(--panel);
+  border:4px solid var(--line);
+  outline:3px solid #000;
+  box-shadow:inset 0 0 0 3px #675f52,6px 6px 0 rgba(0,0,0,.5);
+  border-radius:5px;
 }
-.map:before,.map:after{content:"";position:absolute;background:#6ab1d6;opacity:.8}
-.map:before{left:-8%;right:-8%;height:58px;top:35%;transform:rotate(-4deg)}
-.map:after{top:-8%;bottom:-8%;width:54px;left:18%;transform:rotate(4deg)}
-.place{
-  position:absolute;width:92px;min-height:72px;padding:7px 4px;color:white;background:#16131c;
-  border:3px solid white;outline:2px solid black;border-radius:4px;text-align:center;z-index:2
+.top-ui{display:grid;grid-template-columns:1fr 1.15fr;gap:10px;margin-bottom:10px}
+.title-box,.status-box,.menu-box{padding:12px}
+.title-box{font-size:20px;font-weight:bold;letter-spacing:.06em}
+.menu-box{margin-top:8px;line-height:1.8}
+.status-box{line-height:1.7}
+.status-box strong{display:inline-block;min-width:88px}
+.home-wrap{position:relative}
+.town-image{display:block;width:100%;height:auto;border:4px solid #000}
+.hotspot{
+  position:absolute;border:0;background:transparent;cursor:pointer;
+  border-radius:8px;
 }
-.place strong{display:block;font-size:28px;line-height:1.1}.place span{font-size:11px}
-.place.home{left:7%;top:8%}.place.library{right:7%;top:8%}.place.work{left:7%;bottom:8%}.place.park{right:7%;bottom:8%}.place.calendar{left:50%;top:50%;transform:translate(-50%,-50%)}
-.hero{position:absolute;left:50%;top:72%;transform:translate(-50%,-50%);z-index:3;font-size:34px;filter:drop-shadow(2px 3px 0 #000)}
-.dialog{margin-top:12px;padding:12px;line-height:1.7;font-size:13px}
-.header{padding:12px;margin-bottom:14px}.header-row{display:grid;grid-template-columns:44px 1fr 44px;gap:8px;align-items:center}
-.back-btn,.icon-btn,.main-btn,.small-btn,.nav-btn,.dialog-btn{color:white;border:0;cursor:pointer}
-.back-btn,.icon-btn{height:40px;background:#2c1a50;border:3px solid white;outline:2px solid black;border-radius:4px}
-.screen-title{text-align:center;font-size:20px}
-.month-title{text-align:center;font-size:20px}
-.calendar-panel{padding:10px}.weekdays,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.weekdays div{text-align:center;padding:6px 0;font-size:12px;color:#d8d0ed}.weekdays div:first-child{color:#ff9eb2}.weekdays div:last-child{color:var(--blue)}
-.day{min-height:62px;position:relative;padding:5px 3px;color:white;background:#13131a;border:2px solid #6c647c;border-radius:3px;overflow:hidden}
-.day.empty{opacity:.16}.day.today{border-color:var(--yellow);box-shadow:inset 0 0 0 2px #806d19}.day.selected{background:#3c2363;border-color:white}
-.day-number{font-size:14px;font-weight:700}.day:nth-child(7n+1) .day-number{color:#ff9eb2}.day:nth-child(7n) .day-number{color:var(--blue)}
-.event-dot{display:block;margin-top:4px;padding:2px 3px;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:4px solid var(--pink);background:#251a35}
-.content-panel{padding:14px;margin-top:14px}.content-panel h2{font-size:18px;margin:0 0 12px}
+.hotspot:active{background:rgba(255,255,255,.12)}
+.hs-home{left:10%;top:25%;width:28%;height:20%}
+.hs-study{left:39%;top:24%;width:24%;height:22%}
+.hs-calendar{left:67%;top:25%;width:27%;height:20%}
+.hs-work{left:7%;top:48%;width:29%;height:23%}
+.hs-family{left:67%;top:48%;width:27%;height:23%}
+.hs-reading{left:34%;top:60%;width:34%;height:24%}
+.message-box{margin-top:10px;padding:14px 16px;line-height:1.8;font-size:14px}
+.message-box .arrow{display:block;text-align:center;font-size:18px}
+.bottom-nav{
+  position:fixed;z-index:30;left:50%;bottom:0;transform:translateX(-50%);
+  width:min(100%,760px);padding:7px 8px calc(7px + env(safe-area-inset-bottom));
+  display:grid;grid-template-columns:repeat(5,1fr);gap:5px;background:#090909;border-top:3px solid var(--line)
+}
+.nav-btn{
+  min-height:58px;color:var(--white);background:#0c0c0c;border:3px solid var(--line);
+  outline:2px solid #000;font-size:10px;border-radius:4px
+}
+.nav-btn strong{display:block;font-size:22px;margin-bottom:2px}
+.header{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:8px;padding:10px;margin-bottom:12px}
+.back-btn,.icon-btn{height:40px;color:var(--white);background:#151515;border:3px solid var(--line);outline:2px solid #000}
+.screen-title{text-align:center;font-size:18px;font-weight:bold}
+.content{padding:12px}
+.content h2{margin:0 0 12px;font-size:18px}
+.main-btn,.small-btn,.dialog-btn{
+  color:var(--white);background:#1b1027;border:3px solid var(--line);outline:2px solid #000
+}
+.main-btn{width:100%;padding:12px;margin-top:12px;font-weight:bold}
+.small-btn{padding:5px 7px;font-size:11px}.small-btn.danger{background:var(--danger)}
+.card{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px;margin:8px 0;background:#101010;border:2px solid #807868}
+.card-meta{font-size:12px;color:#e7d68b}.card-title{font-size:15px}.card-note{font-size:12px;color:var(--muted);margin-top:4px;white-space:pre-wrap}
 .empty{padding:14px 2px;color:var(--muted)}
-.card{background:var(--panel2);border:2px solid #746d81;padding:10px;margin:8px 0;display:grid;grid-template-columns:1fr auto;gap:8px}
-.card-title{font-size:16px}.card-meta{font-size:12px;color:var(--yellow);margin-bottom:4px}.card-note{font-size:12px;color:var(--muted);white-space:pre-wrap;margin-top:4px}
-.actions{display:flex;gap:6px;align-items:start}.small-btn{padding:6px 8px;background:#34204f;border:2px solid white;outline:1px solid black;font-size:12px}.small-btn.danger{background:#5d2330}
-.main-btn{width:100%;margin-top:12px;padding:13px 14px;font-weight:700;background:linear-gradient(180deg,#7441aa,#4d2c79);border:3px solid white;outline:2px solid black;border-radius:4px}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}.stat{padding:12px;text-align:center;background:#1a1524;border:2px solid #716781}.stat strong{display:block;font-size:24px;color:var(--yellow)}
-.progress{height:18px;background:#21192c;border:2px solid #8d829d;margin:8px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,#7d49b2,#ef74c8)}
-.bottom-nav{position:fixed;z-index:20;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,760px);padding:8px 12px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:rgba(6,5,13,.96);border-top:3px solid white}
-.nav-btn{background:#21153e;min-height:54px;border:2px solid #6d5e85;font-size:12px}.nav-btn strong{display:block;font-size:20px}
-.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.78);display:none;align-items:flex-end;justify-content:center;padding:14px}.modal.show{display:flex}
-.modal-card{width:min(100%,620px);padding:16px;max-height:92vh;overflow:auto}.modal-card h2{margin:0 0 14px}
-label{display:block;margin:10px 0 5px;color:#ddd5ee;font-size:13px}
-input,textarea,select{width:100%;padding:11px;color:white;background:#130f19;border:2px solid #9c92ad;border-radius:2px}
-textarea{min-height:80px;resize:vertical}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.dialog-btn{padding:12px;background:#352050;border:3px solid white;outline:2px solid black}.dialog-btn.primary{background:#63348f}
-.toast{position:fixed;left:50%;bottom:94px;transform:translateX(-50%);z-index:80;padding:10px 14px;background:#050507;border:3px solid white;outline:2px solid black;display:none}.toast.show{display:block}
-@media(max-width:520px){.map{min-height:430px}.place{width:82px}.form-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+.month-row{display:grid;grid-template-columns:44px 1fr 44px;gap:8px;align-items:center;margin-bottom:10px}
+.month-title{text-align:center;font-size:18px}
+.weekdays,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.weekdays div{text-align:center;padding:5px 0;font-size:11px;color:var(--muted)}
+.day{min-height:58px;color:var(--white);background:#101010;border:2px solid #686154;padding:4px 3px;overflow:hidden}
+.day.today{border-color:#f1d971}.day.selected{background:#2f1d44;border-color:var(--line)}
+.day-number{font-size:13px;font-weight:bold}
+.event-dot{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px;padding:2px;background:#20172c;border-left:3px solid #d676c8}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.stat{padding:10px;text-align:center;background:#111;border:2px solid #766e60}
+.stat strong{display:block;font-size:22px;color:#f0d679}
+.progress{height:18px;background:#171717;border:2px solid #766e60;margin:8px 0}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,#4b2d6c,#d676c8)}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center;padding:12px}
+.modal.show{display:flex}
+.modal-card{width:min(100%,620px);padding:14px;max-height:92vh;overflow:auto}
+.modal-card h2{margin:0 0 12px}
+label{display:block;margin:9px 0 4px;color:var(--muted);font-size:12px}
+input,textarea,select{width:100%;padding:10px;color:var(--white);background:#111;border:2px solid #81796b}
+textarea{min-height:78px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.dialog-btn{padding:11px}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:80;padding:9px 12px;background:#050505;border:3px solid var(--line);display:none}
+.toast.show{display:block}
+@media(max-width:520px){
+  .top-ui{grid-template-columns:1fr 1fr}
+  .title-box{font-size:17px}.status-box{font-size:12px}
+  .form-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="topbar"><div class="brand">★ よていクエスト</div><div class="status">Ver.2</div></div>
-
-  <section id="mapScreen" class="screen active">
-    <div class="panel title-panel">
-      <h1>よていタウン</h1>
-      <div class="subtitle">いきたい ばしょを えらんでください。</div>
-    </div>
-    <div class="panel map-panel">
-      <div class="map">
-        <button class="place home" data-screen="todayScreen"><strong>🏠</strong><span>おうち<br>きょうのよてい</span></button>
-        <button class="place library" data-screen="studyScreen"><strong>📚</strong><span>としょかん<br>べんきょう</span></button>
-        <button class="place calendar" data-screen="calendarScreen"><strong>📅</strong><span>やくば<br>よていひょう</span></button>
-        <button class="place work" data-screen="workScreen"><strong>🏥</strong><span>しごとば<br>アイデア</span></button>
-        <button class="place park" data-screen="familyScreen"><strong>🌳</strong><span>こうえん<br>こどものよてい</span></button>
-        <div class="hero">🧑‍💼</div>
+  <section id="homeScreen" class="screen active">
+    <div class="top-ui">
+      <div>
+        <div class="pixel-window title-box">よていクエスト</div>
+        <div class="pixel-window menu-box">▶ はなす<br>　どうぐ<br>　ステータス<br>　オプション</div>
       </div>
-      <div class="panel dialog">▶ たてものを タップすると なかに はいれます。</div>
+      <div class="pixel-window status-box">
+        <strong>オガス</strong><br>
+        <strong>HP</strong>100/100<br>
+        <strong>やるき</strong>★★★★☆<br>
+        <strong>レベル</strong>34
+      </div>
+    </div>
+
+    <div class="home-wrap">
+      <img class="town-image" src="./town-map.png" alt="よていタウン">
+      <button class="hotspot hs-home" data-screen="todayScreen" aria-label="今日の予定"></button>
+      <button class="hotspot hs-study" data-screen="studyScreen" aria-label="勉強記録"></button>
+      <button class="hotspot hs-calendar" data-screen="calendarScreen" aria-label="月間カレンダー"></button>
+      <button class="hotspot hs-work" data-screen="workScreen" aria-label="仕事メモ"></button>
+      <button class="hotspot hs-family" data-screen="familyScreen" aria-label="子どもの予定"></button>
+      <button class="hotspot hs-reading" data-screen="readingScreen" aria-label="読書記録"></button>
+    </div>
+
+    <div class="pixel-window message-box">
+      きょうも よていを たてて<br>
+      すてきな いちにちに しよう！
+      <span class="arrow">▼</span>
     </div>
   </section>
 
   <section id="calendarScreen" class="screen">
-    <div class="panel header">
-      <div class="header-row"><button class="back-btn">←</button><div class="screen-title">やくばの よていひょう</div><span></span></div>
-    </div>
-    <div class="panel header">
-      <div class="header-row">
-        <button class="icon-btn" id="prevMonth">◀</button>
-        <div class="month-title" id="monthTitle"></div>
-        <button class="icon-btn" id="nextMonth">▶</button>
-      </div>
-    </div>
-    <div class="panel calendar-panel">
-      <div class="weekdays"><div>にち</div><div>げつ</div><div>か</div><div>すい</div><div>もく</div><div>きん</div><div>ど</div></div>
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">月間カレンダー</div><span></span></div>
+    <div class="pixel-window content">
+      <div class="month-row"><button class="icon-btn" id="prevMonth">◀</button><div class="month-title" id="monthTitle"></div><button class="icon-btn" id="nextMonth">▶</button></div>
+      <div class="weekdays"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div>
       <div class="days" id="calendarDays"></div>
     </div>
-    <div class="panel content-panel">
-      <h2 id="detailTitle"></h2><div id="eventList"></div>
-      <button class="main-btn" id="addEvent">▶ よていを とうろく</button>
-    </div>
+    <div class="pixel-window content" style="margin-top:12px"><h2 id="detailTitle"></h2><div id="eventList"></div><button class="main-btn" id="addEvent">▶ よていを とうろく</button></div>
   </section>
 
   <section id="todayScreen" class="screen">
-    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">おうち</div><span></span></div></div>
-    <div class="panel content-panel">
-      <h2>きょうの クエスト</h2>
-      <div id="todayList"></div>
-      <button class="main-btn" data-screen="calendarScreen">よていひょうを ひらく</button>
-    </div>
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">今日の予定</div><span></span></div>
+    <div class="pixel-window content"><h2>きょうの クエスト</h2><div id="todayList"></div><button class="main-btn" data-screen="calendarScreen">月間カレンダーを ひらく</button></div>
   </section>
 
   <section id="studyScreen" class="screen">
-    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">としょかん</div><span></span></div></div>
-    <div class="panel content-panel">
-      <h2>べんきょうきろく</h2>
-      <div class="stats"><div class="stat"><strong id="studyTotal">0</strong>ふん</div><div class="stat"><strong id="studyCount">0</strong>かい</div></div>
-      <div id="studyList"></div>
-      <button class="main-btn" id="addStudy">▶ べんきょうを きろく</button>
-    </div>
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">勉強記録</div><span></span></div>
+    <div class="pixel-window content"><div class="stats"><div class="stat"><strong id="studyTotal">0</strong>分</div><div class="stat"><strong id="studyCount">0</strong>回</div></div><div id="studyList"></div><button class="main-btn" id="addStudy">▶ 勉強を記録</button></div>
   </section>
 
   <section id="readingScreen" class="screen">
-    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">ほんや</div><span></span></div></div>
-    <div class="panel content-panel">
-      <h2>どくしょ 100さつクエスト</h2>
-      <div class="progress"><span id="readingProgress"></span></div>
-      <div class="stats"><div class="stat"><strong id="readingCount">0</strong>さつ</div><div class="stat"><strong>100</strong>もくひょう</div></div>
-      <div id="readingList"></div>
-      <button class="main-btn" id="addBook">▶ よみおえた ほんを とうろく</button>
-    </div>
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">読書記録</div><span></span></div>
+    <div class="pixel-window content"><h2>100冊クエスト</h2><div class="progress"><span id="readingProgress"></span></div><div class="stats"><div class="stat"><strong id="readingCount">0</strong>冊</div><div class="stat"><strong>100</strong>目標</div></div><div id="readingList"></div><button class="main-btn" id="addBook">▶ 本を登録</button></div>
   </section>
 
   <section id="workScreen" class="screen">
-    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">しごとば</div><span></span></div></div>
-    <div class="panel content-panel">
-      <h2>かいぜん アイデア</h2><div id="workList"></div>
-      <button class="main-btn" id="addWork">▶ アイデアを とうろく</button>
-    </div>
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">仕事メモ</div><span></span></div>
+    <div class="pixel-window content"><div id="workList"></div><button class="main-btn" id="addWork">▶ アイデアを登録</button></div>
   </section>
 
   <section id="familyScreen" class="screen">
-    <div class="panel header"><div class="header-row"><button class="back-btn">←</button><div class="screen-title">こうえん</div><span></span></div></div>
-    <div class="panel content-panel">
-      <h2>こどもの よてい</h2><div id="familyList"></div>
-      <button class="main-btn" id="addFamily">▶ よていを とうろく</button>
-    </div>
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">子どもの予定</div><span></span></div>
+    <div class="pixel-window content"><div id="familyList"></div><button class="main-btn" id="addFamily">▶ 予定を登録</button></div>
   </section>
 </div>
 
 <nav class="bottom-nav">
-  <button class="nav-btn" data-screen="mapScreen"><strong>🗺️</strong>まっぷ</button>
-  <button class="nav-btn" data-screen="calendarScreen"><strong>📅</strong>よてい</button>
-  <button class="nav-btn" data-screen="readingScreen"><strong>📖</strong>どくしょ</button>
+  <button class="nav-btn" data-screen="homeScreen"><strong>🏠</strong>ホーム</button>
+  <button class="nav-btn" data-screen="calendarScreen"><strong>📅</strong>予定</button>
+  <button class="nav-btn" data-screen="studyScreen"><strong>📚</strong>勉強</button>
+  <button class="nav-btn" data-screen="readingScreen"><strong>📖</strong>読書</button>
+  <button class="nav-btn" data-screen="workScreen"><strong>📝</strong>仕事</button>
 </nav>
 
 <div class="modal" id="genericModal">
-  <div class="panel modal-card">
+  <div class="pixel-window modal-card">
     <h2 id="modalTitle"></h2>
-    <form id="genericForm">
-      <div id="modalFields"></div>
-      <div class="modal-actions"><button type="button" class="dialog-btn" id="cancelModal">キャンセル</button><button type="submit" class="dialog-btn primary">とうろく</button></div>
-    </form>
+    <form id="genericForm"><div id="modalFields"></div><div class="modal-actions"><button type="button" class="dialog-btn" id="cancelModal">キャンセル</button><button type="submit" class="dialog-btn">とうろく</button></div></form>
   </div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
 const $=id=>document.getElementById(id);
-const KEYS={events:"yq_events_v2",study:"yq_study_v2",books:"yq_books_v2",work:"yq_work_v2",family:"yq_family_v2"};
+const KEYS={
+  events:"yq_events_v2",study:"yq_study_v2",books:"yq_books_v2",
+  work:"yq_work_v2",family:"yq_family_v2"
+};
 let data={};
 for(const [k,v] of Object.entries(KEYS)) data[k]=JSON.parse(localStorage.getItem(v)||"[]");
-let viewDate=new Date(),selectedDate=fmt(new Date()),modalMode="",editingId="";
+let viewDate=new Date(),selectedDate=fmt(new Date()),modalMode="";
 function fmt(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function pdate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
-function jp(s){const d=pdate(s),w=["にち","げつ","か","すい","もく","きん","ど"][d.getDay()];return `${d.getFullYear()}ねん ${d.getMonth()+1}がつ ${d.getDate()}にち（${w}）`}
+function jp(s){const d=pdate(s),w=["日","月","火","水","木","金","土"][d.getDay()];return `${d.getFullYear()}年 ${d.getMonth()+1}月 ${d.getDate()}日（${w}）`}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
 function uid(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
 function save(k){localStorage.setItem(KEYS[k],JSON.stringify(data[k]))}
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1500)}
 function showScreen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0);renderAll()}
 document.querySelectorAll("[data-screen]").forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
-document.querySelectorAll(".back-btn").forEach(b=>b.onclick=()=>showScreen("mapScreen"));
+document.querySelectorAll(".back-btn").forEach(b=>b.onclick=()=>showScreen("homeScreen"));
 
-function renderCalendar(){
- const y=viewDate.getFullYear(),m=viewDate.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0);
- $("monthTitle").textContent=`${y}ねん ${m+1}がつ`;$("calendarDays").innerHTML="";
- for(let i=0;i<first.getDay();i++){const e=document.createElement("div");e.className="day empty";$("calendarDays").appendChild(e)}
- for(let day=1;day<=last.getDate();day++){
-  const key=fmt(new Date(y,m,day)),list=data.events.filter(e=>e.date===key).sort((a,b)=>(a.time||"99").localeCompare(b.time||"99"));
-  const cell=document.createElement("button");cell.className="day";if(key===fmt(new Date()))cell.classList.add("today");if(key===selectedDate)cell.classList.add("selected");
-  cell.innerHTML=`<span class="day-number">${day}</span>`;list.slice(0,2).forEach(ev=>{const x=document.createElement("span");x.className="event-dot";x.textContent=`${ev.time?ev.time+" ":""}${ev.name}`;cell.appendChild(x)});
-  cell.onclick=()=>{selectedDate=key;renderCalendar()};$("calendarDays").appendChild(cell)
- }
- $("detailTitle").textContent=jp(selectedDate);renderCards("eventList",data.events.filter(x=>x.date===selectedDate),"events");
-}
 function renderCards(target,list,type){
  const el=$(target);el.innerHTML=list.length?"":"<div class='empty'>まだ きろくが ありません。</div>";
  list.forEach(item=>{
   const c=document.createElement("div");c.className="card";
   let meta="",title="",note="";
   if(type==="events"||type==="family"){meta=`${item.date}${item.time?" "+item.time:""}`;title=item.name;note=item.note}
-  if(type==="study"){meta=`${item.date} ／ ${item.minutes}ふん`;title=item.subject;note=item.note}
+  if(type==="study"){meta=`${item.date} ／ ${item.minutes}分`;title=item.subject;note=item.note}
   if(type==="books"){meta=item.date;title=item.title;note=item.author}
   if(type==="work"){meta=item.date;title=item.title;note=item.note}
-  c.innerHTML=`<div><div class="card-meta">${esc(meta)}</div><div class="card-title">${esc(title)}</div>${note?`<div class="card-note">${esc(note)}</div>`:""}</div><div class="actions"><button class="small-btn danger">けす</button></div>`;
+  c.innerHTML=`<div><div class="card-meta">${esc(meta)}</div><div class="card-title">${esc(title)}</div>${note?`<div class="card-note">${esc(note)}</div>`:""}</div><div><button class="small-btn danger">けす</button></div>`;
   c.querySelector("button").onclick=()=>{if(confirm("けしますか？")){data[type]=data[type].filter(x=>x.id!==item.id);save(type);renderAll()}};
   el.appendChild(c)
  })
+}
+function renderCalendar(){
+ const y=viewDate.getFullYear(),m=viewDate.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0);
+ $("monthTitle").textContent=`${y}年 ${m+1}月`;$("calendarDays").innerHTML="";
+ for(let i=0;i<first.getDay();i++){const e=document.createElement("div");e.className="day";e.style.opacity=".15";$("calendarDays").appendChild(e)}
+ for(let day=1;day<=last.getDate();day++){
+  const key=fmt(new Date(y,m,day)),list=data.events.filter(e=>e.date===key).sort((a,b)=>(a.time||"99").localeCompare(b.time||"99"));
+  const cell=document.createElement("button");cell.className="day";if(key===fmt(new Date()))cell.classList.add("today");if(key===selectedDate)cell.classList.add("selected");
+  cell.innerHTML=`<span class="day-number">${day}</span>`;list.slice(0,2).forEach(ev=>{const x=document.createElement("span");x.className="event-dot";x.textContent=`${ev.time?ev.time+" ":""}${ev.name}`;cell.appendChild(x)});
+  cell.onclick=()=>{selectedDate=key;renderCalendar()};$("calendarDays").appendChild(cell)
+ }
+ $("detailTitle").textContent=jp(selectedDate);renderCards("eventList",data.events.filter(x=>x.date===selectedDate),"events")
 }
 function renderAll(){
  renderCalendar();
@@ -243,23 +249,22 @@ function renderAll(){
  $("studyTotal").textContent=data.study.reduce((a,b)=>a+Number(b.minutes||0),0);$("studyCount").textContent=data.study.length;
  renderCards("readingList",data.books.slice().reverse(),"books");$("readingCount").textContent=data.books.length;$("readingProgress").style.width=Math.min(100,data.books.length)+"%";
  renderCards("workList",data.work.slice().reverse(),"work");
- renderCards("familyList",data.family.slice().sort((a,b)=>a.date.localeCompare(b.date)),"family");
+ renderCards("familyList",data.family.slice().sort((a,b)=>a.date.localeCompare(b.date)),"family")
 }
 $("prevMonth").onclick=()=>{viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1);selectedDate=fmt(viewDate);renderCalendar()}
 $("nextMonth").onclick=()=>{viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1);selectedDate=fmt(viewDate);renderCalendar()}
 
 function openModal(mode){
- modalMode=mode;editingId="";let title="",fields="";
+ modalMode=mode;let title="",fields="";
  if(mode==="events"){title="よていを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${selectedDate}" required><div class="form-grid"><div><label>じかん</label><input id="fTime" type="time"></div><div><label>しゅるい</label><select id="fCat"><option>かぞく</option><option>しごと</option><option>びょういん</option><option>ほいくえん</option><option>じぶん</option></select></div></div><label>なまえ</label><input id="fTitle" required><label>メモ</label><textarea id="fNote"></textarea>`}
- if(mode==="study"){title="べんきょうを きろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>かもく</label><input id="fTitle" placeholder="れい：労基法" required><label>べんきょうじかん（ふん）</label><input id="fMinutes" type="number" min="1" value="30" required><label>メモ</label><textarea id="fNote"></textarea>`}
- if(mode==="books"){title="ほんを とうろく";fields=`<label>よみおえたひ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>ほんの なまえ</label><input id="fTitle" required><label>ちょしゃ</label><input id="fAuthor">`}
- if(mode==="work"){title="アイデアを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>タイトル</label><input id="fTitle" required><label>ないよう</label><textarea id="fNote"></textarea>`}
- if(mode==="family"){title="こどもの よていを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>じかん</label><input id="fTime" type="time"><label>よてい</label><input id="fTitle" required><label>メモ</label><textarea id="fNote"></textarea>`}
+ if(mode==="study"){title="べんきょうを きろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>かもく</label><input id="fTitle" required><label>じかん（分）</label><input id="fMinutes" type="number" min="1" value="30" required><label>メモ</label><textarea id="fNote"></textarea>`}
+ if(mode==="books"){title="本を とうろく";fields=`<label>よみおえた日</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>本の名前</label><input id="fTitle" required><label>著者</label><input id="fAuthor">`}
+ if(mode==="work"){title="アイデアを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>タイトル</label><input id="fTitle" required><label>内容</label><textarea id="fNote"></textarea>`}
+ if(mode==="family"){title="子どもの予定を とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>じかん</label><input id="fTime" type="time"><label>よてい</label><input id="fTitle" required><label>メモ</label><textarea id="fNote"></textarea>`}
  $("modalTitle").textContent=title;$("modalFields").innerHTML=fields;$("genericModal").classList.add("show")
 }
 $("addEvent").onclick=()=>openModal("events");$("addStudy").onclick=()=>openModal("study");$("addBook").onclick=()=>openModal("books");$("addWork").onclick=()=>openModal("work");$("addFamily").onclick=()=>openModal("family");
 $("cancelModal").onclick=()=>$("genericModal").classList.remove("show");
-$("genericModal").onclick=e=>{if(e.target===$("genericModal"))$("genericModal").classList.remove("show")};
 $("genericForm").onsubmit=e=>{
  e.preventDefault();let item={id:uid()};
  if(modalMode==="events")item={...item,date:$("fDate").value,time:$("fTime").value,category:$("fCat").value,name:$("fTitle").value.trim(),note:$("fNote").value.trim()};
