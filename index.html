@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="よていクエスト">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<title>よていクエスト v1.0.0</title>
+<title>よていクエスト v1.0.1</title>
 <style>
 :root{
   --bg:#080808;--panel:#050505;--white:#fff8dc;--muted:#cfc8b8;
@@ -184,15 +184,20 @@ textarea{min-height:78px}
     <div class="pixel-window content">
       <h2>セーブデータ</h2>
       <div class="data-info">
-        アプリ v1.0.0<br>
+        アプリ v1.0.1<br>
         データ形式：Schema <strong id="schemaVersionLabel">1</strong><br>
-        保存キー：yoteiquest_data_v1<br>最終バックアップ：<span id="lastBackupLabel">まだありません</span>
+        保存キー：yoteiquest_data_v1<br>
+        最終手動バックアップ：<span id="lastBackupLabel">まだありません</span><br>
+        最終自動スナップショット：<span id="lastAutoBackupLabel">まだありません</span><br>
+        保存データ状態：<span id="dataHealthLabel">確認中</span>
       </div>
       <div class="data-actions">
         <button class="main-btn" id="exportBackup">💾 バックアップを書き出す</button>
         <button class="main-btn" id="importBackup">📥 バックアップを読み込む</button>
         <input class="file-input" id="backupFile" type="file" accept="application/json,.json">
+        <button class="main-btn" id="restoreAutoBackup">↩️ 直前の自動保存に戻す</button>
         <button class="main-btn" id="repairData">🛠 旧データを確認・修復する</button>
+        <button class="main-btn" id="checkDataHealth">🔎 保存データを点検する</button>
         <button class="main-btn" id="toggleSound">🔊 効果音：ON</button>
       </div>
       <p class="data-info">バックアップは予定・献立・勉強・読書・仕事・子どもの予定を1つのJSONファイルに保存します。読み込み時は現在のデータを置き換えます。</p>
@@ -221,9 +226,11 @@ textarea{min-height:78px}
 
 <script>
 const $=id=>document.getElementById(id);
-const APP_VERSION="1.0.0";
+const APP_VERSION="1.0.1";
 const SCHEMA_VERSION=1;
 const MASTER_KEY="yoteiquest_data_v1";
+const AUTO_BACKUP_KEY="yoteiquest_auto_backup_v1";
+const AUTO_BACKUP_TIME_KEY="yoteiquest_auto_backup_time_v1";
 const OLD_MASTER_KEYS=["yoteiQuestData"];
 const LEGACY_KEYS={
   events:"yq_events_v2",study:"yq_study_v2",books:"yq_books_v2",
@@ -271,16 +278,38 @@ function loadStore(){
   return migrated;
 }
 let data=loadStore();
+if(!localStorage.getItem(AUTO_BACKUP_KEY)){
+  try{
+    localStorage.setItem(AUTO_BACKUP_KEY,JSON.stringify(data));
+    localStorage.setItem(AUTO_BACKUP_TIME_KEY,new Date().toISOString());
+  }catch{}
+}
 let viewDate=new Date(),selectedDate=fmt(new Date()),modalMode="",recipeCategory="main";
 function fmt(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function pdate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
 function jp(s){const d=pdate(s),w=["日","月","火","水","木","金","土"][d.getDay()];return `${d.getFullYear()}年 ${d.getMonth()+1}月 ${d.getDate()}日（${w}）`}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
 function uid(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
+function createAutoSnapshot(){
+  try{
+    const current=localStorage.getItem(MASTER_KEY);
+    if(current){
+      localStorage.setItem(AUTO_BACKUP_KEY,current);
+      localStorage.setItem(AUTO_BACKUP_TIME_KEY,new Date().toISOString());
+    }
+  }catch{}
+}
 function persistAll(){
- data.schemaVersion=SCHEMA_VERSION;data.appVersion=APP_VERSION;data.updatedAt=new Date().toISOString();
- localStorage.setItem(MASTER_KEY,JSON.stringify(data));
- for(const [name,key] of Object.entries(LEGACY_KEYS)) localStorage.setItem(key,JSON.stringify(data[name]||[]));
+  createAutoSnapshot();
+  data=migrate(data);
+  data.schemaVersion=SCHEMA_VERSION;
+  data.appVersion=APP_VERSION;
+  data.updatedAt=new Date().toISOString();
+  const serialized=JSON.stringify(data);
+  localStorage.setItem(MASTER_KEY,serialized);
+  for(const [name,key] of Object.entries(LEGACY_KEYS)){
+    localStorage.setItem(key,JSON.stringify(data[name]||[]));
+  }
 }
 function save(k){persistAll()}
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1500)}
@@ -402,9 +431,20 @@ $("genericForm").onsubmit=e=>{
  data[modalMode].push(item);save(modalMode);$("genericModal").classList.remove("show");renderAll();toast("とうろくしました。")
 };
 
+function validateDataStore(store=data){
+  const requiredArrays=["events","study","books","work","family","recipes","todo","inventory","achievements"];
+  const broken=requiredArrays.filter(k=>!Array.isArray(store?.[k]));
+  if(store?.schemaVersion!==SCHEMA_VERSION)broken.push("schemaVersion");
+  if(typeof store?.money!=="number")broken.push("money");
+  return {ok:broken.length===0,broken};
+}
 function updateDataInfo(){
-  if($("schemaVersionLabel")) $("schemaVersionLabel").textContent=String(data.schemaVersion||SCHEMA_VERSION);
-  if($("lastBackupLabel")) $("lastBackupLabel").textContent=localStorage.getItem("yq_last_backup")||"まだありません";
+  if($("schemaVersionLabel"))$("schemaVersionLabel").textContent=String(data.schemaVersion||SCHEMA_VERSION);
+  if($("lastBackupLabel"))$("lastBackupLabel").textContent=localStorage.getItem("yq_last_backup")||"まだありません";
+  const autoTime=localStorage.getItem(AUTO_BACKUP_TIME_KEY);
+  if($("lastAutoBackupLabel"))$("lastAutoBackupLabel").textContent=autoTime?new Date(autoTime).toLocaleString("ja-JP"):"まだありません";
+  const health=validateDataStore();
+  if($("dataHealthLabel"))$("dataHealthLabel").textContent=health.ok?"正常":"要修復";
 }
 function backupPayload(){return {app:"よていクエスト",appVersion:APP_VERSION,schemaVersion:SCHEMA_VERSION,exportedAt:new Date().toISOString(),data:migrate(data)}}
 $("exportBackup").onclick=()=>{
@@ -436,6 +476,28 @@ $("repairData").onclick=()=>{
   persistAll();renderAll();toast(added?`${added}件を修復しました。`:"修復が必要なデータはありません。");
 };
 
+$("restoreAutoBackup").onclick=()=>{
+  const raw=localStorage.getItem(AUTO_BACKUP_KEY);
+  if(!raw){alert("復元できる自動スナップショットがありません。");return;}
+  if(!confirm("直前の自動保存時点へ戻しますか？ 現在の状態は上書きされます。"))return;
+  try{
+    data=migrate(JSON.parse(raw));
+    localStorage.setItem(MASTER_KEY,JSON.stringify(data));
+    for(const [name,key] of Object.entries(LEGACY_KEYS))localStorage.setItem(key,JSON.stringify(data[name]||[]));
+    renderAll();
+    toast("直前の自動保存へ戻しました。");
+  }catch{
+    alert("自動スナップショットを復元できませんでした。");
+  }
+};
+$("checkDataHealth").onclick=()=>{
+  const health=validateDataStore();
+  if(health.ok){
+    toast("保存データは正常です。");
+  }else{
+    alert(`修復が必要な項目：${health.broken.join(", ")}`);
+  }
+};
 $("toggleSound").onclick=()=>{
   data.settings.sound=!data.settings.sound;persistAll();
   $("toggleSound").textContent=`🔊 効果音：${data.settings.sound?"ON":"OFF"}`;
