@@ -1,4 +1,4 @@
-const CACHE='yotei-quest-v5';
+const CACHE='yotei-quest-v6';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./town-map.png','./restaurant-map.png','./icon-180.png','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
