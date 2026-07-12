@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="よていクエスト">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<title>よていクエスト Ver.3</title>
+<title>よていクエスト Ver.5</title>
 <style>
 :root{
   --bg:#080808;--panel:#050505;--white:#fff8dc;--muted:#cfc8b8;
@@ -35,12 +35,6 @@ button{touch-action:manipulation}
   box-shadow:inset 0 0 0 3px #675f52,6px 6px 0 rgba(0,0,0,.5);
   border-radius:5px;
 }
-.top-ui{display:grid;grid-template-columns:1fr 1.15fr;gap:10px;margin-bottom:10px}
-.title-box,.status-box,.menu-box{padding:12px}
-.title-box{font-size:20px;font-weight:bold;letter-spacing:.06em}
-.menu-box{margin-top:8px;line-height:1.8}
-.status-box{line-height:1.7}
-.status-box strong{display:inline-block;min-width:88px}
 .home-wrap{position:relative}
 .town-image{display:block;width:100%;height:auto;border:4px solid #000}
 .hotspot{
@@ -54,8 +48,6 @@ button{touch-action:manipulation}
 .hs-work{left:7%;top:48%;width:29%;height:23%}
 .hs-family{left:67%;top:48%;width:27%;height:23%}
 .hs-reading{left:34%;top:60%;width:34%;height:24%}
-.message-box{margin-top:10px;padding:14px 16px;line-height:1.8;font-size:14px}
-.message-box .arrow{display:block;text-align:center;font-size:18px}
 .bottom-nav{
   position:fixed;z-index:30;left:50%;bottom:0;transform:translateX(-50%);
   width:min(100%,760px);padding:7px 8px calc(7px + env(safe-area-inset-bottom));
@@ -111,7 +103,6 @@ textarea{min-height:78px}
 .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:80;padding:9px 12px;background:#050505;border:3px solid var(--line);display:none}
 .toast.show{display:block}
 @media(max-width:520px){
-  .top-ui{grid-template-columns:1fr 1fr}
   .title-box{font-size:17px}.status-box{font-size:12px}
   .form-grid{grid-template-columns:1fr}
 }
@@ -120,19 +111,6 @@ textarea{min-height:78px}
 <body>
 <div class="app">
   <section id="homeScreen" class="screen active">
-    <div class="top-ui">
-      <div>
-        <div class="pixel-window title-box">よていクエスト</div>
-        <div class="pixel-window menu-box">▶ はなす<br>　どうぐ<br>　ステータス<br>　オプション</div>
-      </div>
-      <div class="pixel-window status-box">
-        <strong>オガス</strong><br>
-        <strong>HP</strong>100/100<br>
-        <strong>やるき</strong>★★★★☆<br>
-        <strong>レベル</strong>34
-      </div>
-    </div>
-
     <div class="home-wrap">
       <img class="town-image" src="./town-map.png" alt="よていタウン">
       <button class="hotspot hs-home" data-screen="todayScreen" aria-label="今日の予定"></button>
@@ -140,17 +118,9 @@ textarea{min-height:78px}
       <button class="hotspot hs-calendar" data-screen="calendarScreen" aria-label="月間カレンダー"></button>
       <button class="hotspot hs-work" data-screen="workScreen" aria-label="仕事メモ"></button>
       <button class="hotspot hs-family" data-screen="familyScreen" aria-label="子どもの予定"></button>
-      <button class="hotspot hs-reading" data-screen="readingScreen" aria-label="読書記録"></button>
-      <button class="hotspot hs-reading" data-screen="recipeScreen" aria-label="献立"></button>
-    </div>
-
-    <div class="pixel-window message-box">
-      きょうも よていを たてて<br>
-      すてきな いちにちに しよう！
-      <span class="arrow">▼</span>
+      <button class="hotspot hs-reading" data-screen="recipeScreen" aria-label="献立・レシピメモ"></button>
     </div>
   </section>
-
 
   <section id="recipeScreen" class="screen">
     <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">献立・レシピメモ</div><span></span></div>
