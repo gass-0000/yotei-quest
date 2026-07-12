@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="よていクエスト">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<title>よていクエスト Ver.6 修正版</title>
+<title>よていクエスト Ver.7</title>
 <style>
 :root{
   --bg:#080808;--panel:#050505;--white:#fff8dc;--muted:#cfc8b8;
@@ -95,11 +95,12 @@ textarea{min-height:78px}
 .dialog-btn{padding:11px}
 .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:80;padding:9px 12px;background:#050505;border:3px solid var(--line);display:none}
 .toast.show{display:block}
+.data-actions{display:grid;gap:10px}.data-info{line-height:1.8;color:var(--muted);font-size:13px}.danger-btn{background:#652431}.file-input{display:none}
 
 .bottom-nav{
   position:fixed;z-index:30;left:50%;bottom:0;transform:translateX(-50%);
   width:min(100%,760px);padding:7px 8px calc(7px + env(safe-area-inset-bottom));
-  display:grid;grid-template-columns:repeat(6,1fr);gap:4px;background:#090909;border-top:3px solid var(--line)
+  display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:#090909;border-top:3px solid var(--line)
 }
 .nav-btn{min-height:58px;color:var(--white);background:#0c0c0c;border:3px solid var(--line);outline:2px solid #000;font-size:9px;border-radius:4px}
 .nav-btn strong{display:block;font-size:21px;margin-bottom:2px}
@@ -177,6 +178,25 @@ textarea{min-height:78px}
     <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">子どもの予定</div><span></span></div>
     <div class="pixel-window content"><div id="familyList"></div><button class="main-btn" id="addFamily">▶ 予定を登録</button></div>
   </section>
+
+  <section id="settingsScreen" class="screen">
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">データ管理</div><span></span></div>
+    <div class="pixel-window content">
+      <h2>セーブデータ</h2>
+      <div class="data-info">
+        アプリ Ver.7<br>
+        データ形式：Schema <strong id="schemaVersionLabel">1</strong><br>
+        最終バックアップ：<span id="lastBackupLabel">まだありません</span>
+      </div>
+      <div class="data-actions">
+        <button class="main-btn" id="exportBackup">💾 バックアップを書き出す</button>
+        <button class="main-btn" id="importBackup">📥 バックアップを読み込む</button>
+        <input class="file-input" id="backupFile" type="file" accept="application/json,.json">
+        <button class="main-btn" id="repairData">🛠 旧データを確認・修復する</button>
+      </div>
+      <p class="data-info">バックアップは予定・献立・勉強・読書・仕事・子どもの予定を1つのJSONファイルに保存します。読み込み時は現在のデータを置き換えます。</p>
+    </div>
+  </section>
 </div>
 
 
@@ -187,6 +207,7 @@ textarea{min-height:78px}
   <button class="nav-btn" data-screen="studyScreen"><strong>📚</strong>勉強</button>
   <button class="nav-btn" data-screen="readingScreen"><strong>📖</strong>読書</button>
   <button class="nav-btn" data-screen="workScreen"><strong>📝</strong>仕事</button>
+  <button class="nav-btn" data-screen="settingsScreen"><strong>⚙️</strong>設定</button>
 </nav>
 
 <div class="modal" id="genericModal">
@@ -199,19 +220,47 @@ textarea{min-height:78px}
 
 <script>
 const $=id=>document.getElementById(id);
-const KEYS={
+const APP_VERSION="7";
+const SCHEMA_VERSION=1;
+const MASTER_KEY="yoteiQuestData";
+const LEGACY_KEYS={
   events:"yq_events_v2",study:"yq_study_v2",books:"yq_books_v2",
   work:"yq_work_v2",family:"yq_family_v2",recipes:"yq_recipes_v4"
 };
-let data={};
-for(const [k,v] of Object.entries(KEYS)) data[k]=JSON.parse(localStorage.getItem(v)||"[]");
+function safeParse(text,fallback){try{return JSON.parse(text)}catch{return fallback}}
+function emptyStore(){return {schemaVersion:SCHEMA_VERSION,updatedAt:new Date().toISOString(),events:[],study:[],books:[],work:[],family:[],recipes:[]}}
+function migrate(raw){
+  if(!raw||typeof raw!=="object") return emptyStore();
+  const migrated={...emptyStore(),...raw};
+  for(const key of ["events","study","books","work","family","recipes"]){if(!Array.isArray(migrated[key])) migrated[key]=[]}
+  migrated.schemaVersion=SCHEMA_VERSION;
+  return migrated;
+}
+function readLegacy(){
+  const legacy=emptyStore();
+  for(const [name,key] of Object.entries(LEGACY_KEYS)) legacy[name]=safeParse(localStorage.getItem(key)||"[]",[]);
+  return legacy;
+}
+function loadStore(){
+  const master=safeParse(localStorage.getItem(MASTER_KEY)||"null",null);
+  if(master) return migrate(master);
+  const legacy=readLegacy();
+  localStorage.setItem(MASTER_KEY,JSON.stringify(legacy));
+  return legacy;
+}
+let data=loadStore();
 let viewDate=new Date(),selectedDate=fmt(new Date()),modalMode="",recipeCategory="main";
 function fmt(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function pdate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
 function jp(s){const d=pdate(s),w=["日","月","火","水","木","金","土"][d.getDay()];return `${d.getFullYear()}年 ${d.getMonth()+1}月 ${d.getDate()}日（${w}）`}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
 function uid(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
-function save(k){localStorage.setItem(KEYS[k],JSON.stringify(data[k]))}
+function persistAll(){
+ data.schemaVersion=SCHEMA_VERSION;data.updatedAt=new Date().toISOString();
+ localStorage.setItem(MASTER_KEY,JSON.stringify(data));
+ for(const [name,key] of Object.entries(LEGACY_KEYS)) localStorage.setItem(key,JSON.stringify(data[name]||[]));
+}
+function save(k){persistAll()}
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1500)}
 function showScreen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0);renderAll()}
 document.querySelectorAll("[data-screen]").forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
@@ -267,7 +316,7 @@ function renderCalendar(){
  $("detailTitle").textContent=jp(selectedDate);renderCards("eventList",data.events.filter(x=>x.date===selectedDate),"events")
 }
 function renderAll(){
- renderCalendar();renderRecipes();
+ renderCalendar();renderRecipes();updateDataInfo();
  const today=fmt(new Date());renderCards("todayList",data.events.filter(x=>x.date===today),"events");
  renderCards("studyList",data.study.slice().reverse(),"study");
  $("studyTotal").textContent=data.study.reduce((a,b)=>a+Number(b.minutes||0),0);$("studyCount").textContent=data.study.length;
@@ -300,6 +349,41 @@ $("genericForm").onsubmit=e=>{
  if(modalMode==="recipes")item={...item,date:$("fDate").value,title:$("fTitle").value.trim(),note:$("fNote").value.trim(),category:recipeCategory};
  data[modalMode].push(item);save(modalMode);$("genericModal").classList.remove("show");renderAll();toast("とうろくしました。")
 };
+
+function updateDataInfo(){
+  if($("schemaVersionLabel")) $("schemaVersionLabel").textContent=String(data.schemaVersion||SCHEMA_VERSION);
+  if($("lastBackupLabel")) $("lastBackupLabel").textContent=localStorage.getItem("yq_last_backup")||"まだありません";
+}
+function backupPayload(){return {app:"よていクエスト",appVersion:APP_VERSION,schemaVersion:SCHEMA_VERSION,exportedAt:new Date().toISOString(),data:migrate(data)}}
+$("exportBackup").onclick=()=>{
+  const payload=backupPayload();
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");
+  const stamp=new Date().toISOString().slice(0,10).replaceAll("-","");
+  a.href=url;a.download=`yoteiquest_backup_${stamp}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  const label=new Date().toLocaleString("ja-JP");localStorage.setItem("yq_last_backup",label);updateDataInfo();toast("バックアップを書き出しました。");
+};
+$("importBackup").onclick=()=>$("backupFile").click();
+$("backupFile").onchange=async e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  try{
+    const parsed=JSON.parse(await file.text());
+    const incoming=parsed.data||parsed;
+    const restored=migrate(incoming);
+    if(!confirm("現在のデータをバックアップ内容で置き換えますか？"))return;
+    data=restored;persistAll();renderAll();updateDataInfo();toast("データを復元しました。");
+  }catch(err){alert("バックアップを読み込めませんでした。JSONファイルを確認してください。")}
+  e.target.value="";
+};
+$("repairData").onclick=()=>{
+  const legacy=readLegacy();let added=0;
+  for(const key of ["events","study","books","work","family","recipes"]){
+    const ids=new Set((data[key]||[]).map(x=>x.id).filter(Boolean));
+    for(const item of legacy[key]||[]){if(!item.id||!ids.has(item.id)){data[key].push(item);if(item.id)ids.add(item.id);added++}}
+  }
+  persistAll();renderAll();toast(added?`${added}件を修復しました。`:"修復が必要なデータはありません。");
+};
+
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
 renderAll();
 </script>
