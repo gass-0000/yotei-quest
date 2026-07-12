@@ -59,7 +59,7 @@ button{touch-action:manipulation}
 .bottom-nav{
   position:fixed;z-index:30;left:50%;bottom:0;transform:translateX(-50%);
   width:min(100%,760px);padding:7px 8px calc(7px + env(safe-area-inset-bottom));
-  display:grid;grid-template-columns:repeat(5,1fr);gap:5px;background:#090909;border-top:3px solid var(--line)
+  display:grid;grid-template-columns:repeat(6,1fr);gap:5px;background:#090909;border-top:3px solid var(--line)
 }
 .nav-btn{
   min-height:58px;color:var(--white);background:#0c0c0c;border:3px solid var(--line);
@@ -92,6 +92,12 @@ button{touch-action:manipulation}
 .stat strong{display:block;font-size:22px;color:#f0d679}
 .progress{height:18px;background:#171717;border:2px solid #766e60;margin:8px 0}
 .progress span{display:block;height:100%;background:linear-gradient(90deg,#4b2d6c,#d676c8)}
+
+.recipe-categories{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.category-btn{min-height:105px;padding:10px 6px;color:var(--white);background:#0a0a0a;border:3px solid var(--line);outline:2px solid #000;font-size:12px}
+.category-btn strong{display:block;font-size:30px;margin-bottom:8px}.category-btn.active{background:#3a214f}
+.restaurant-image{display:block;width:100%;height:auto;border:4px solid #000}.recipe-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.recipe-head h2{margin:0}
+
 .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center;padding:12px}
 .modal.show{display:flex}
 .modal-card{width:min(100%,620px);padding:14px;max-height:92vh;overflow:auto}
@@ -135,12 +141,31 @@ textarea{min-height:78px}
       <button class="hotspot hs-work" data-screen="workScreen" aria-label="仕事メモ"></button>
       <button class="hotspot hs-family" data-screen="familyScreen" aria-label="子どもの予定"></button>
       <button class="hotspot hs-reading" data-screen="readingScreen" aria-label="読書記録"></button>
+      <button class="hotspot hs-reading" data-screen="recipeScreen" aria-label="献立"></button>
     </div>
 
     <div class="pixel-window message-box">
       きょうも よていを たてて<br>
       すてきな いちにちに しよう！
       <span class="arrow">▼</span>
+    </div>
+  </section>
+
+
+  <section id="recipeScreen" class="screen">
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">献立・レシピメモ</div><span></span></div>
+    <div><img class="restaurant-image" src="./restaurant-map.png" alt="レストラン"></div>
+    <div class="pixel-window content" style="margin-top:12px">
+      <div class="recipe-categories">
+        <button class="category-btn active" data-category="main"><strong>🍖</strong>メイン</button>
+        <button class="category-btn" data-category="side"><strong>🥗</strong>副菜</button>
+        <button class="category-btn" data-category="soup"><strong>🥣</strong>汁物</button>
+      </div>
+    </div>
+    <div class="pixel-window content" style="margin-top:12px">
+      <div class="recipe-head"><h2 id="recipeListTitle">メインのメモ</h2></div>
+      <div id="recipeList"></div>
+      <button class="main-btn" id="addRecipe">▶ あたらしく メモする</button>
     </div>
   </section>
 
@@ -183,6 +208,7 @@ textarea{min-height:78px}
 <nav class="bottom-nav">
   <button class="nav-btn" data-screen="homeScreen"><strong>🏠</strong>ホーム</button>
   <button class="nav-btn" data-screen="calendarScreen"><strong>📅</strong>予定</button>
+  <button class="nav-btn" data-screen="recipeScreen"><strong>🍽️</strong>献立</button>
   <button class="nav-btn" data-screen="studyScreen"><strong>📚</strong>勉強</button>
   <button class="nav-btn" data-screen="readingScreen"><strong>📖</strong>読書</button>
   <button class="nav-btn" data-screen="workScreen"><strong>📝</strong>仕事</button>
@@ -200,11 +226,11 @@ textarea{min-height:78px}
 const $=id=>document.getElementById(id);
 const KEYS={
   events:"yq_events_v2",study:"yq_study_v2",books:"yq_books_v2",
-  work:"yq_work_v2",family:"yq_family_v2"
+  work:"yq_work_v2",family:"yq_family_v2",recipes:"yq_recipes_v4"
 };
 let data={};
 for(const [k,v] of Object.entries(KEYS)) data[k]=JSON.parse(localStorage.getItem(v)||"[]");
-let viewDate=new Date(),selectedDate=fmt(new Date()),modalMode="";
+let viewDate=new Date(),selectedDate=fmt(new Date()),modalMode="",recipeCategory="main";
 function fmt(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function pdate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
 function jp(s){const d=pdate(s),w=["日","月","火","水","木","金","土"][d.getDay()];return `${d.getFullYear()}年 ${d.getMonth()+1}月 ${d.getDate()}日（${w}）`}
@@ -230,6 +256,22 @@ function renderCards(target,list,type){
   el.appendChild(c)
  })
 }
+
+function renderRecipes(){
+ const labels={main:"メイン",side:"副菜",soup:"汁物"};
+ $("recipeListTitle").textContent=`${labels[recipeCategory]}のメモ`;
+ document.querySelectorAll(".category-btn").forEach(b=>b.classList.toggle("active",b.dataset.category===recipeCategory));
+ const list=data.recipes.filter(r=>r.category===recipeCategory).slice().reverse();
+ const el=$("recipeList");el.innerHTML=list.length?"":"<div class='empty'>まだ レシピメモが ありません。</div>";
+ list.forEach(item=>{
+  const c=document.createElement("div");c.className="card";
+  c.innerHTML=`<div><div class="card-meta">${esc(item.date)}</div><div class="card-title">${esc(item.title)}</div>${item.note?`<div class="card-note">${esc(item.note)}</div>`:""}</div><div><button class="small-btn danger">けす</button></div>`;
+  c.querySelector("button").onclick=()=>{if(confirm("このレシピメモを けしますか？")){data.recipes=data.recipes.filter(x=>x.id!==item.id);save("recipes");renderRecipes()}};
+  el.appendChild(c)
+ })
+}
+document.querySelectorAll(".category-btn").forEach(b=>b.onclick=()=>{recipeCategory=b.dataset.category;renderRecipes()});
+
 function renderCalendar(){
  const y=viewDate.getFullYear(),m=viewDate.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0);
  $("monthTitle").textContent=`${y}年 ${m+1}月`;$("calendarDays").innerHTML="";
@@ -243,7 +285,7 @@ function renderCalendar(){
  $("detailTitle").textContent=jp(selectedDate);renderCards("eventList",data.events.filter(x=>x.date===selectedDate),"events")
 }
 function renderAll(){
- renderCalendar();
+ renderCalendar();renderRecipes();
  const today=fmt(new Date());renderCards("todayList",data.events.filter(x=>x.date===today),"events");
  renderCards("studyList",data.study.slice().reverse(),"study");
  $("studyTotal").textContent=data.study.reduce((a,b)=>a+Number(b.minutes||0),0);$("studyCount").textContent=data.study.length;
@@ -261,9 +303,10 @@ function openModal(mode){
  if(mode==="books"){title="本を とうろく";fields=`<label>よみおえた日</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>本の名前</label><input id="fTitle" required><label>著者</label><input id="fAuthor">`}
  if(mode==="work"){title="アイデアを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>タイトル</label><input id="fTitle" required><label>内容</label><textarea id="fNote"></textarea>`}
  if(mode==="family"){title="子どもの予定を とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>じかん</label><input id="fTime" type="time"><label>よてい</label><input id="fTitle" required><label>メモ</label><textarea id="fNote"></textarea>`}
+ if(mode==="recipes"){const labels={main:"メイン",side:"副菜",soup:"汁物"};title=`${labels[recipeCategory]}のレシピメモ`;fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>料理名</label><input id="fTitle" placeholder="れい：照り焼きチキン" required><label>材料・作り方・メモ</label><textarea id="fNote" placeholder="材料や手順、次回の改善点など"></textarea>`}
  $("modalTitle").textContent=title;$("modalFields").innerHTML=fields;$("genericModal").classList.add("show")
 }
-$("addEvent").onclick=()=>openModal("events");$("addStudy").onclick=()=>openModal("study");$("addBook").onclick=()=>openModal("books");$("addWork").onclick=()=>openModal("work");$("addFamily").onclick=()=>openModal("family");
+$("addEvent").onclick=()=>openModal("events");$("addStudy").onclick=()=>openModal("study");$("addBook").onclick=()=>openModal("books");$("addWork").onclick=()=>openModal("work");$("addFamily").onclick=()=>openModal("family");$("addRecipe").onclick=()=>openModal("recipes");
 $("cancelModal").onclick=()=>$("genericModal").classList.remove("show");
 $("genericForm").onsubmit=e=>{
  e.preventDefault();let item={id:uid()};
@@ -272,6 +315,7 @@ $("genericForm").onsubmit=e=>{
  if(modalMode==="books")item={...item,date:$("fDate").value,title:$("fTitle").value.trim(),author:$("fAuthor").value.trim()};
  if(modalMode==="work")item={...item,date:$("fDate").value,title:$("fTitle").value.trim(),note:$("fNote").value.trim()};
  if(modalMode==="family")item={...item,date:$("fDate").value,time:$("fTime").value,name:$("fTitle").value.trim(),note:$("fNote").value.trim()};
+ if(modalMode==="recipes")item={...item,date:$("fDate").value,title:$("fTitle").value.trim(),note:$("fNote").value.trim(),category:recipeCategory};
  data[modalMode].push(item);save(modalMode);$("genericModal").classList.remove("show");renderAll();toast("とうろくしました。")
 };
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));

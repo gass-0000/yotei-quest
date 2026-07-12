@@ -1,7 +1,7 @@
 {
   "name": "よていクエスト",
   "short_name": "よてい",
-  "description": "レトロRPG風ライフ管理アプリ",
+  "description": "レトロRPG風ライフ管理アプリ。献立・レシピメモ付き",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
