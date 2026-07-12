@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="よていクエスト">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<title>よていクエスト v1.0.1</title>
+<title>よていクエスト v1.0.2</title>
 <style>
 :root{
   --bg:#080808;--panel:#050505;--white:#fff8dc;--muted:#cfc8b8;
@@ -49,6 +49,42 @@ button{touch-action:manipulation}
 .hs-recipe{left:64%;top:39%;width:32%;height:24%}
 .hs-family{left:4%;top:62%;width:29%;height:20%}
 .hs-reading{left:35%;top:61%;width:30%;height:23%}
+
+.world-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;border:4px solid transparent}
+.cloud{position:absolute;width:18%;height:5%;opacity:.34;filter:blur(.3px);
+  background:radial-gradient(ellipse at center,rgba(255,255,255,.82) 0 38%,rgba(255,255,255,0) 68%);
+  animation:cloud-drift 28s linear infinite}
+.cloud.c1{top:11%;left:-20%;animation-delay:-3s}.cloud.c2{top:22%;left:-33%;width:14%;animation-duration:36s;animation-delay:-17s;opacity:.25}
+@keyframes cloud-drift{from{transform:translateX(0)}to{transform:translateX(700%)}}
+.tree-sway{position:absolute;border-radius:50%;transform-origin:50% 95%;
+  background:radial-gradient(circle at 50% 55%,rgba(188,255,137,.18),rgba(54,126,45,.05) 56%,transparent 72%);
+  animation:tree-sway 3.3s ease-in-out infinite alternate}
+.tree-sway.t1{left:1%;top:21%;width:18%;height:31%}
+.tree-sway.t2{right:0;top:20%;width:18%;height:34%;animation-delay:-1.1s}
+.tree-sway.t3{left:22%;top:1%;width:16%;height:28%;animation-delay:-2s}
+.tree-sway.t4{right:23%;top:0;width:16%;height:29%;animation-delay:-.7s}
+@keyframes tree-sway{from{transform:rotate(-.8deg) translateX(-1px)}to{transform:rotate(.8deg) translateX(1px)}}
+.river-shimmer{position:absolute;left:0;right:0;bottom:0;height:8.5%;opacity:.34;
+  background:
+    repeating-linear-gradient(105deg,transparent 0 16px,rgba(173,238,255,.42) 17px 20px,transparent 21px 39px);
+  background-size:80px 100%;
+  mix-blend-mode:screen;
+  animation:river-flow 2.6s linear infinite}
+@keyframes river-flow{from{background-position:0 0}to{background-position:80px 0}}
+html[data-animations="off"] .world-layer{display:none}
+html[data-time-phase="morning"] .town-image{filter:sepia(.08) brightness(1.06) saturate(1.03)}
+html[data-time-phase="evening"] .town-image{filter:sepia(.28) hue-rotate(-12deg) saturate(1.17) brightness(.9)}
+html[data-time-phase="night"] .town-image{filter:brightness(.58) saturate(.82) hue-rotate(8deg)}
+html[data-time-phase="night"] .world-layer::after{
+  content:"";position:absolute;inset:0;background:radial-gradient(circle at 72% 12%,rgba(255,249,195,.28),transparent 12%);
+}
+.audio-unlock{
+  position:fixed;z-index:95;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);
+  background:#050505;color:var(--white);border:3px solid var(--line);outline:2px solid #000;
+  padding:8px 12px;font-size:12px;display:none
+}
+.audio-unlock.show{display:block}
+
 .header{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:8px;padding:10px;margin-bottom:12px}
 .back-btn,.icon-btn{height:40px;color:var(--white);background:#151515;border:3px solid var(--line);outline:2px solid #000}
 .screen-title{text-align:center;font-size:18px;font-weight:bold}
@@ -116,6 +152,12 @@ textarea{min-height:78px}
   <section id="homeScreen" class="screen active">
     <div class="home-wrap">
       <img class="town-image" src="./town-map.png" alt="よていタウン">
+      <div class="world-layer" aria-hidden="true">
+        <span class="cloud c1"></span><span class="cloud c2"></span>
+        <span class="tree-sway t1"></span><span class="tree-sway t2"></span>
+        <span class="tree-sway t3"></span><span class="tree-sway t4"></span>
+        <span class="river-shimmer"></span>
+      </div>
       <button class="hotspot hs-home" data-screen="todayScreen" aria-label="今日の予定"></button>
       <button class="hotspot hs-study" data-screen="studyScreen" aria-label="勉強記録"></button>
       <button class="hotspot hs-calendar" data-screen="calendarScreen" aria-label="月間カレンダー"></button>
@@ -184,7 +226,7 @@ textarea{min-height:78px}
     <div class="pixel-window content">
       <h2>セーブデータ</h2>
       <div class="data-info">
-        アプリ v1.0.1<br>
+        アプリ v1.0.2<br>
         データ形式：Schema <strong id="schemaVersionLabel">1</strong><br>
         保存キー：yoteiquest_data_v1<br>
         最終手動バックアップ：<span id="lastBackupLabel">まだありません</span><br>
@@ -199,6 +241,8 @@ textarea{min-height:78px}
         <button class="main-btn" id="repairData">🛠 旧データを確認・修復する</button>
         <button class="main-btn" id="checkDataHealth">🔎 保存データを点検する</button>
         <button class="main-btn" id="toggleSound">🔊 効果音：ON</button>
+        <button class="main-btn" id="toggleBgm">🎵 BGM：OFF</button>
+        <button class="main-btn" id="toggleAnimations">🌳 街のアニメーション：ON</button>
       </div>
       <p class="data-info">バックアップは予定・献立・勉強・読書・仕事・子どもの予定を1つのJSONファイルに保存します。読み込み時は現在のデータを置き換えます。</p>
     </div>
@@ -223,10 +267,11 @@ textarea{min-height:78px}
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<button class="audio-unlock" id="audioUnlock">🔊 タップして音を有効にする</button>
 
 <script>
 const $=id=>document.getElementById(id);
-const APP_VERSION="1.0.1";
+const APP_VERSION="1.0.2";
 const SCHEMA_VERSION=1;
 const MASTER_KEY="yoteiquest_data_v1";
 const AUTO_BACKUP_KEY="yoteiquest_auto_backup_v1";
@@ -243,7 +288,7 @@ function emptyStore(){return {
   updatedAt:new Date().toISOString(),
   events:[],study:[],books:[],work:[],family:[],recipes:[],
   todo:[],money:0,inventory:[],room:{items:[]},gacha:{history:[]},
-  achievements:[],battle:{answered:0,correct:0},settings:{sound:true,bgm:false,animations:true,timeEffects:true}
+  achievements:[],battle:{answered:0,correct:0},settings:{sound:true,bgm:true,animations:true,timeEffects:true}
 }}
 function migrate(raw){
   if(!raw||typeof raw!=="object") return emptyStore();
@@ -314,35 +359,97 @@ function persistAll(){
 function save(k){persistAll()}
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1500)}
 
-// 共通サウンド基盤：音声ファイルなしでも短い電子音を生成できる
+// 共通サウンド基盤：PWAでも最初のユーザー操作で解除し、画面遷移後も同じAudioContextを使う
 const SoundEngine=(()=>{
-  let ctx=null;
-  function context(){if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx}
+  let ctx=null,master=null,bgmGain=null,bgmTimer=null,bgmStep=0,unlocked=false;
+  const melody=[523.25,659.25,783.99,659.25,587.33,698.46,783.99,698.46];
+  function context(){
+    if(!ctx){
+      ctx=new (window.AudioContext||window.webkitAudioContext)();
+      master=ctx.createGain();master.gain.value=.42;master.connect(ctx.destination);
+      bgmGain=ctx.createGain();bgmGain.gain.value=.032;bgmGain.connect(master);
+    }
+    return ctx;
+  }
+  async function unlock(){
+    try{
+      const c=context();
+      if(c.state==="suspended")await c.resume();
+      const b=c.createBuffer(1,1,c.sampleRate),s=c.createBufferSource();
+      s.buffer=b;s.connect(master);s.start(0);
+      unlocked=true;
+      $("audioUnlock")?.classList.remove("show");
+      if(data?.settings?.bgm!==false)startBgm();
+      return true;
+    }catch{
+      $("audioUnlock")?.classList.add("show");
+      return false;
+    }
+  }
+  function tone(freq,dur=.05,vol=.055,type="square",delay=0,destination=master){
+    if(!unlocked)return;
+    const c=context(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime+delay;
+    o.type=type;o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(destination);o.start(t);o.stop(t+dur+.02);
+  }
   function beep(type="cursor"){
     if(data?.settings?.sound===false)return;
-    try{
-      const c=context(),o=c.createOscillator(),g=c.createGain();
-      const map={cursor:[760,.035],confirm:[960,.06],save:[660,.05],cancel:[360,.05]};
-      const [freq,dur]=map[type]||map.cursor;
-      o.type="square";o.frequency.value=freq;g.gain.setValueAtTime(.035,c.currentTime);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+dur);
-      o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+dur);
-    }catch{}
+    if(!unlocked){$("audioUnlock")?.classList.add("show");return;}
+    const map={
+      cursor:[[760,.035,.045]],
+      confirm:[[880,.045,.05],[1174,.055,.045,.04]],
+      save:[[659,.05,.05],[880,.07,.045,.05]],
+      cancel:[[360,.06,.05]],
+      page:[[540,.04,.04]]
+    };
+    for(const [freq,dur,vol,delay=0] of (map[type]||map.cursor))tone(freq,dur,vol,"square",delay);
   }
-  return {beep};
+  function scheduleBgmNote(){
+    if(!unlocked||data?.settings?.bgm===false||document.hidden)return;
+    const freq=melody[bgmStep%melody.length];bgmStep++;
+    tone(freq,.19,.038,"square",0,bgmGain);
+    if(bgmStep%2===0)tone(freq/2,.14,.022,"triangle",.03,bgmGain);
+  }
+  function startBgm(){
+    if(data?.settings?.bgm===false||!unlocked)return;
+    if(bgmTimer)return;
+    scheduleBgmNote();
+    bgmTimer=setInterval(scheduleBgmNote,420);
+  }
+  function stopBgm(){
+    if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null;}
+  }
+  function sync(){
+    if(data?.settings?.bgm!==false)startBgm();else stopBgm();
+  }
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden)stopBgm();
+    else if(unlocked&&data?.settings?.bgm!==false){context().resume().then(startBgm).catch(()=>{});}
+  });
+  window.addEventListener("pageshow",()=>{
+    if(unlocked&&data?.settings?.bgm!==false){context().resume().then(startBgm).catch(()=>{});}
+  });
+  return {unlock,beep,startBgm,stopBgm,sync,isUnlocked:()=>unlocked};
 })();
 
-// 共通アニメーション・時間帯基盤（本格演出は今後この入口に追加）
+// 街のアニメーション・時間帯基盤
 const WorldEngine={
   phase(){const h=new Date().getHours();return h<5?"night":h<10?"morning":h<17?"day":h<19?"evening":"night"},
-  apply(){document.documentElement.dataset.timePhase=this.phase();}
+  apply(){
+    document.documentElement.dataset.timePhase=data?.settings?.timeEffects===false?"day":this.phase();
+    document.documentElement.dataset.animations=data?.settings?.animations===false?"off":"on";
+  }
 };
 WorldEngine.apply();
 setInterval(()=>WorldEngine.apply(),60000);
 
-document.addEventListener("click",e=>{
+document.addEventListener("pointerdown",async e=>{
+  await SoundEngine.unlock();
   const button=e.target.closest("button");
-  if(button) SoundEngine.beep(button.classList.contains("danger")?"cancel":"cursor");
+  if(button)SoundEngine.beep(button.classList.contains("danger")?"cancel":"cursor");
 },{capture:true});
+$("audioUnlock").onclick=async()=>{await SoundEngine.unlock();SoundEngine.beep("confirm");};
 function showScreen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");window.scrollTo(0,0);renderAll()}
 document.querySelectorAll("[data-screen]").forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
 document.querySelectorAll(".back-btn").forEach(b=>{
@@ -498,15 +605,35 @@ $("checkDataHealth").onclick=()=>{
     alert(`修復が必要な項目：${health.broken.join(", ")}`);
   }
 };
-$("toggleSound").onclick=()=>{
+$("toggleSound").onclick=async()=>{
+  await SoundEngine.unlock();
   data.settings.sound=!data.settings.sound;persistAll();
-  $("toggleSound").textContent=`🔊 効果音：${data.settings.sound?"ON":"OFF"}`;
+  updateFoundationControls();
   if(data.settings.sound)SoundEngine.beep("confirm");
 };
-function updateFoundationControls(){if($("toggleSound"))$("toggleSound").textContent=`🔊 効果音：${data.settings.sound?"ON":"OFF"}`;}
+$("toggleBgm").onclick=async()=>{
+  await SoundEngine.unlock();
+  data.settings.bgm=!data.settings.bgm;persistAll();
+  SoundEngine.sync();updateFoundationControls();
+  if(data.settings.bgm)SoundEngine.beep("confirm");
+};
+$("toggleAnimations").onclick=()=>{
+  data.settings.animations=!data.settings.animations;persistAll();
+  WorldEngine.apply();updateFoundationControls();
+};
+function updateFoundationControls(){
+  if($("toggleSound"))$("toggleSound").textContent=`🔊 効果音：${data.settings.sound?"ON":"OFF"}`;
+  if($("toggleBgm"))$("toggleBgm").textContent=`🎵 BGM：${data.settings.bgm?"ON":"OFF"}`;
+  if($("toggleAnimations"))$("toggleAnimations").textContent=`🌳 街のアニメーション：${data.settings.animations?"ON":"OFF"}`;
+}
 const originalRenderAll=renderAll;
 renderAll=function(){originalRenderAll();updateFoundationControls();};
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+window.addEventListener("load",()=>{
+  WorldEngine.apply();
+  const standalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
+  if(standalone&&data.settings.sound!==false)$("audioUnlock")?.classList.add("show");
+});
 renderAll();
 </script>
 </body>
