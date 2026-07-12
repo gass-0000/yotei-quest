@@ -1,4 +1,11 @@
-# Changelog
+# CHANGELOG
 
-## 1.0.0
-- Phase1 Foundation release.
+## v1.0.0
+- 正式保存キー `yoteiquest_data_v1` を導入
+- 旧データ自動移行
+- Schema 1
+- バックアップ・復元・修復
+- 将来のTodo・G・アイテム・部屋・ガチャ・実績・バトル領域
+- 共通サウンド基盤
+- 時間帯・アニメーション基盤
+- 既存画面と機能を維持
