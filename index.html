@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="よていクエスト">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<title>よていクエスト v1.1.1</title>
+<title>よていクエスト v1.1.3</title>
 <style>
 :root{
   --bg:#080808;--panel:#050505;--white:#fff8dc;--muted:#cfc8b8;
@@ -52,18 +52,21 @@ button{touch-action:manipulation}
 
 
 .world-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;border:4px solid transparent}
-.tree-wind-layer{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:fill;
-  image-rendering:pixelated;mix-blend-mode:screen;
-  animation:tree-wind-sway 2.8s steps(4,end) infinite;
+
+.tree-wind-layer{display:none}
+.leaf-particles{position:absolute;inset:0;overflow:hidden}
+.leaf-particle{
+  position:absolute;width:5px;height:3px;border-radius:60% 20% 60% 20%;
+  background:#9da93d;opacity:.75;filter:drop-shadow(1px 1px 0 rgba(20,40,10,.45));
+  animation:leaf-fall var(--leaf-duration,6s) linear infinite;
+  animation-delay:var(--leaf-delay,0s);
+  transform:translate3d(0,-8px,0) rotate(0deg)
 }
-@keyframes tree-wind-sway{
-  0%,100%{opacity:.16;transform:translateX(-1px)}
-  25%{opacity:.55;transform:translateX(1px)}
-  50%{opacity:.24;transform:translateX(2px)}
-  75%{opacity:.48;transform:translateX(0)}
-}
-  100%{transform:translateX(1px) rotate(.12deg)}
+@keyframes leaf-fall{
+  0%{transform:translate3d(0,-8px,0) rotate(0deg);opacity:0}
+  12%{opacity:.8}
+  55%{transform:translate3d(var(--leaf-drift,16px),70px,0) rotate(190deg);opacity:.72}
+  100%{transform:translate3d(calc(var(--leaf-drift,16px) * -0.35),145px,0) rotate(390deg);opacity:0}
 }
 .river-light-layer{
   position:absolute;inset:0;width:100%;height:100%;object-fit:fill;
@@ -128,12 +131,27 @@ html[data-time-phase="night"] .world-layer::after{
 
 .library-scene{position:relative}
 .library-image{display:block;width:100%;height:auto;border:4px solid #000;image-rendering:pixelated}
-.library-choice{display:grid;grid-template-columns:1fr;gap:10px;padding:12px;margin-top:10px}
+.library-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;margin-top:10px}
 .library-choice-btn{
-  min-height:86px;color:var(--white);background:#18120c;border:3px solid var(--line);
-  outline:2px solid #000;text-align:left;padding:12px 16px;font-size:15px
+  min-height:128px;color:var(--white);background:linear-gradient(180deg,#21170d,#120d08);border:3px solid var(--line);
+  outline:2px solid #000;text-align:center;padding:14px 10px;font-size:13px;line-height:1.55
 }
-.library-choice-btn strong{display:block;font-size:22px;margin-bottom:5px}
+.library-choice-btn strong{display:block;font-size:20px;margin-bottom:9px}
+.settings-scene{position:relative;margin-bottom:10px}
+.settings-room{display:block;width:100%;height:190px;object-fit:cover;object-position:center 62%;border:4px solid #000;image-rendering:pixelated;filter:sepia(.12) brightness(.7)}
+.settings-room::after{content:""}
+.settings-panel{padding:12px;background:linear-gradient(180deg,#0b0906,#050505)}
+.settings-intro{padding:12px;margin-bottom:10px;background:#11100d;border:2px solid #75633f;color:#efe4c9;line-height:1.6}
+.setting-row{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;min-height:68px;padding:10px 12px;margin:8px 0;background:#19150f;border:2px solid #806a43;box-shadow:inset 0 0 0 2px #2b2418}
+.setting-icon{font-size:25px;text-align:center}.setting-label{font-size:15px}.setting-sub{display:block;font-size:10px;color:#cfc2a4;margin-top:2px}
+.volume-wrap{display:grid;grid-template-columns:minmax(110px,1fr) 42px;align-items:center;gap:8px;min-width:170px}
+.volume-slider{appearance:none;width:100%;height:7px;border:0;background:linear-gradient(90deg,#2876d7 var(--value,70%),#353535 var(--value,70%));outline:none;padding:0}
+.volume-slider::-webkit-slider-thumb{appearance:none;width:20px;height:20px;border-radius:50%;background:#dfc28c;border:2px solid #6d5633}
+.volume-value{text-align:right;color:#ead8ad;font-size:12px}
+.switch{position:relative;width:68px;height:34px;border:2px solid #6d5b39;border-radius:18px;background:#3a3a34;color:#fff;cursor:pointer}.switch.on{background:#287b2c}.switch::after{content:"";position:absolute;top:3px;left:4px;width:24px;height:24px;border-radius:50%;background:#e7d5aa;transition:.18s}.switch.on::after{left:36px}.switch span{position:absolute;left:9px;top:6px;font-size:11px}.switch.on span{left:9px}
+.settings-action{width:100%;display:grid;grid-template-columns:42px 1fr 24px;align-items:center;gap:8px;text-align:left;padding:14px 12px;margin:8px 0;color:var(--white);background:#19150f;border:2px solid #806a43;outline:0}.settings-action .arrow{text-align:right;font-size:22px;color:#dfc28c}
+.settings-details{margin-top:12px;padding-top:10px;border-top:2px solid #5d513b}
+.settings-details summary{cursor:pointer;padding:10px;color:#e3d5b6}
 
 .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.8);display:none;align-items:flex-end;justify-content:center;padding:12px}
 .modal.show{display:flex}
@@ -159,7 +177,13 @@ textarea{min-height:78px}
 @media(max-width:520px){
   .title-box{font-size:17px}.status-box{font-size:12px}
   .form-grid{grid-template-columns:1fr}
-  .bottom-nav{grid-template-columns:repeat(3,1fr)}
+  .bottom-nav{grid-template-columns:repeat(7,minmax(62px,1fr));overflow-x:auto}
+  .library-choice{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px}
+  .library-choice-btn{min-height:120px;padding:12px 6px;font-size:12px}
+  .library-choice-btn strong{font-size:17px}
+  .setting-row{grid-template-columns:34px 1fr;padding:10px}
+  .setting-row .volume-wrap,.setting-row .switch{grid-column:2}
+  .volume-wrap{min-width:0;width:100%}
 }
 </style>
 </head>
@@ -169,16 +193,15 @@ textarea{min-height:78px}
     <div class="home-wrap">
       <img class="town-image" src="./town-map.png" alt="よていタウン">
       <div class="world-layer" aria-hidden="true">
-        <img class="tree-wind-layer" src="./tree-wind.png" alt="">
+        <div class="leaf-particles" id="leafParticles"></div>
         <img class="river-light-layer" src="./river-light.png" alt="">
       </div>
       <button class="hotspot hs-home" data-screen="todayScreen" aria-label="今日の予定"></button>
       <button class="hotspot hs-study" data-screen="libraryScreen" aria-label="勉強記録"></button>
-      <button class="hotspot hs-calendar" data-screen="calendarScreen" aria-label="月間カレンダー"></button>
+      <button class="hotspot hs-calendar" data-screen="settingsScreen" aria-label="役場・設定"></button>
       <button class="hotspot hs-work" data-screen="workScreen" aria-label="仕事メモ"></button>
       <button class="hotspot hs-recipe" data-screen="recipeScreen" aria-label="献立・レシピメモ"></button>
       <button class="hotspot hs-family" data-screen="familyScreen" aria-label="子どもの予定"></button>
-      <button class="hotspot hs-reading" data-screen="readingScreen" aria-label="読書記録"></button>
     </div>
   </section>
 
@@ -254,29 +277,38 @@ textarea{min-height:78px}
   </section>
 
   <section id="settingsScreen" class="screen">
-    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">データ管理</div><span></span></div>
-    <div class="pixel-window content">
-      <h2>セーブデータ</h2>
-      <div class="data-info">
-        アプリ v1.1.1<br>
-        データ形式：Schema <strong id="schemaVersionLabel">1</strong><br>
-        保存キー：yoteiquest_data_v1<br>
-        最終手動バックアップ：<span id="lastBackupLabel">まだありません</span><br>
-        最終自動スナップショット：<span id="lastAutoBackupLabel">まだありません</span><br>
-        保存データ状態：<span id="dataHealthLabel">確認中</span>
+    <div class="pixel-window header"><button class="back-btn" data-screen="homeScreen">←</button><div class="screen-title">設定（役場）</div><span></span></div>
+    <div class="settings-scene"><img class="settings-room" src="./library-map.png" alt="役場の室内"></div>
+    <div class="pixel-window settings-panel">
+      <div class="settings-intro">設定やデータの管理を行います。</div>
+      <div class="setting-row">
+        <div class="setting-icon">🎵</div><div class="setting-label">BGMの音量<span class="setting-sub">街のBGMを調節します</span></div>
+        <div class="volume-wrap"><input class="volume-slider" id="bgmVolume" type="range" min="0" max="100" step="1"><span class="volume-value" id="bgmVolumeValue">70%</span></div>
       </div>
-      <div class="data-actions">
-        <button class="main-btn" id="exportBackup">💾 バックアップを書き出す</button>
-        <button class="main-btn" id="importBackup">📥 バックアップを読み込む</button>
-        <input class="file-input" id="backupFile" type="file" accept="application/json,.json">
+      <div class="setting-row">
+        <div class="setting-icon">🔊</div><div class="setting-label">効果音の音量<span class="setting-sub">ボタン操作音を調節します</span></div>
+        <div class="volume-wrap"><input class="volume-slider" id="effectVolume" type="range" min="0" max="100" step="1"><span class="volume-value" id="effectVolumeValue">70%</span></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-icon">🖥️</div><div class="setting-label">街の演出<span class="setting-sub">落ち葉エフェクトのON/OFF</span></div>
+        <button class="switch on" id="toggleAnimations" type="button"><span>ON</span></button>
+      </div>
+      <button class="settings-action" id="exportBackup"><span>☁️</span><span>データのバックアップ</span><span class="arrow">›</span></button>
+      <button class="settings-action" id="importBackup"><span>📥</span><span>バックアップから復元</span><span class="arrow">›</span></button>
+      <input class="file-input" id="backupFile" type="file" accept="application/json,.json">
+      <button class="settings-action danger" id="resetData"><span>🗑️</span><span>データのリセット</span><span class="arrow">›</span></button>
+      <details class="settings-details">
+        <summary>詳細なデータ管理</summary>
+        <div class="data-info">
+          アプリ v1.1.3／Schema <strong id="schemaVersionLabel">1</strong><br>
+          最終手動バックアップ：<span id="lastBackupLabel">まだありません</span><br>
+          最終自動保存：<span id="lastAutoBackupLabel">まだありません</span><br>
+          保存データ状態：<span id="dataHealthLabel">確認中</span>
+        </div>
         <button class="main-btn" id="restoreAutoBackup">↩️ 直前の自動保存に戻す</button>
         <button class="main-btn" id="repairData">🛠 旧データを確認・修復する</button>
         <button class="main-btn" id="checkDataHealth">🔎 保存データを点検する</button>
-        <button class="main-btn" id="toggleSound">🔊 効果音：ON</button>
-        <button class="main-btn" id="toggleBgm">🎵 BGM：OFF</button>
-        <button class="main-btn" id="toggleAnimations">🌳 街のアニメーション：ON</button>
-      </div>
-      <p class="data-info">バックアップは予定・献立・勉強・読書・仕事・子どもの予定を1つのJSONファイルに保存します。読み込み時は現在のデータを置き換えます。</p>
+      </details>
     </div>
   </section>
 </div>
@@ -303,7 +335,7 @@ textarea{min-height:78px}
 
 <script>
 const $=id=>document.getElementById(id);
-const APP_VERSION="1.1.1";
+const APP_VERSION="1.1.3";
 const SCHEMA_VERSION=1;
 const MASTER_KEY="yoteiquest_data_v1";
 const AUTO_BACKUP_KEY="yoteiquest_auto_backup_v1";
@@ -320,7 +352,7 @@ function emptyStore(){return {
   updatedAt:new Date().toISOString(),
   events:[],study:[],books:[],work:[],family:[],recipes:[],
   todo:[],money:0,inventory:[],room:{items:[]},gacha:{history:[]},
-  achievements:[],battle:{answered:0,correct:0},settings:{sound:true,bgm:true,animations:true,timeEffects:true}
+  achievements:[],battle:{answered:0,correct:0},settings:{sound:true,bgm:true,bgmVolume:72,effectVolume:72,animations:true,timeEffects:true}
 }}
 function migrate(raw){
   if(!raw||typeof raw!=="object") return emptyStore();
@@ -332,7 +364,9 @@ function migrate(raw){
   if(!migrated.gacha||typeof migrated.gacha!=="object") migrated.gacha={history:[]};
   if(!Array.isArray(migrated.gacha.history)) migrated.gacha.history=[];
   if(!migrated.battle||typeof migrated.battle!=="object") migrated.battle={answered:0,correct:0};
-  migrated.settings={sound:true,bgm:false,animations:true,timeEffects:true,...(migrated.settings||{})};
+  migrated.settings={sound:true,bgm:true,bgmVolume:72,effectVolume:72,animations:true,timeEffects:true,...(migrated.settings||{})};
+  migrated.settings.bgmVolume=Math.max(0,Math.min(100,Number(migrated.settings.bgmVolume??72)));
+  migrated.settings.effectVolume=Math.max(0,Math.min(100,Number(migrated.settings.effectVolume??72)));
   migrated.appVersion=APP_VERSION;
   migrated.schemaVersion=SCHEMA_VERSION;
   return migrated;
@@ -399,7 +433,7 @@ const SoundEngine=(()=>{
     if(!ctx){
       ctx=new (window.AudioContext||window.webkitAudioContext)();
       master=ctx.createGain();master.gain.value=.42;master.connect(ctx.destination);
-      bgmGain=ctx.createGain();bgmGain.gain.value=.07;bgmGain.connect(master);
+      bgmGain=ctx.createGain();bgmGain.gain.value=(Number(data?.settings?.bgmVolume??72)/100)*.16;bgmGain.connect(master);
     }
     return ctx;
   }
@@ -422,7 +456,8 @@ const SoundEngine=(()=>{
     if(!unlocked)return;
     const c=context(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime+delay;
     o.type=type;o.frequency.setValueAtTime(freq,t);
-    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    const effectScale=destination===bgmGain?1:(Number(data?.settings?.effectVolume??72)/100);
+    g.gain.setValueAtTime(vol*effectScale,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
     o.connect(g);g.connect(destination);o.start(t);o.stop(t+dur+.02);
   }
   function beep(type="cursor"){
@@ -453,8 +488,10 @@ const SoundEngine=(()=>{
     if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null;}
   }
   function sync(){
-    if(data?.settings?.bgm!==false)startBgm();else stopBgm();
+    if(bgmGain)bgmGain.gain.value=(Number(data?.settings?.bgmVolume??72)/100)*.16;
+    if(data?.settings?.bgm!==false&&Number(data?.settings?.bgmVolume??72)>0)startBgm();else stopBgm();
   }
+  function setVolumes(){if(bgmGain)bgmGain.gain.value=(Number(data?.settings?.bgmVolume??72)/100)*.16;}
   document.addEventListener("visibilitychange",()=>{
     if(document.hidden)stopBgm();
     else if(unlocked&&data?.settings?.bgm!==false){context().resume().then(startBgm).catch(()=>{});}
@@ -462,7 +499,7 @@ const SoundEngine=(()=>{
   window.addEventListener("pageshow",()=>{
     if(unlocked&&data?.settings?.bgm!==false){context().resume().then(startBgm).catch(()=>{});}
   });
-  return {unlock,beep,startBgm,stopBgm,sync,isUnlocked:()=>unlocked};
+  return {unlock,beep,startBgm,stopBgm,sync,setVolumes,isUnlocked:()=>unlocked};
 })();
 
 // 街のアニメーション・時間帯基盤
@@ -637,31 +674,40 @@ $("checkDataHealth").onclick=()=>{
     alert(`修復が必要な項目：${health.broken.join(", ")}`);
   }
 };
-$("toggleSound").onclick=async()=>{
-  await SoundEngine.unlock();
-  data.settings.sound=!data.settings.sound;persistAll();
-  updateFoundationControls();
-  if(data.settings.sound)SoundEngine.beep("confirm");
+function updateVolumeControl(id,valueId,value){
+  const slider=$(id),label=$(valueId);if(!slider)return;
+  slider.value=String(value);slider.style.setProperty("--value",`${value}%`);if(label)label.textContent=`${value}%`;
+}
+$("bgmVolume").oninput=async e=>{
+  await SoundEngine.unlock();data.settings.bgmVolume=Number(e.target.value);data.settings.bgm=data.settings.bgmVolume>0;persistAll();
+  updateVolumeControl("bgmVolume","bgmVolumeValue",data.settings.bgmVolume);SoundEngine.setVolumes();SoundEngine.sync();
 };
-$("toggleBgm").onclick=async()=>{
-  await SoundEngine.unlock();
-  data.settings.bgm=!data.settings.bgm;persistAll();
-  SoundEngine.sync();updateFoundationControls();
-  if(data.settings.bgm)SoundEngine.beep("confirm");
+$("effectVolume").oninput=async e=>{
+  await SoundEngine.unlock();data.settings.effectVolume=Number(e.target.value);data.settings.sound=data.settings.effectVolume>0;persistAll();
+  updateVolumeControl("effectVolume","effectVolumeValue",data.settings.effectVolume);if(data.settings.sound)SoundEngine.beep("confirm");
 };
-$("toggleAnimations").onclick=()=>{
-  data.settings.animations=!data.settings.animations;persistAll();
-  WorldEngine.apply();updateFoundationControls();
+$("toggleAnimations").onclick=()=>{data.settings.animations=!data.settings.animations;persistAll();WorldEngine.apply();updateFoundationControls();};
+$("resetData").onclick=()=>{
+  if(!confirm("予定・献立・勉強・読書・仕事・子どもの予定を含む全データをリセットしますか？"))return;
+  data=emptyStore();persistAll();renderAll();showScreen("homeScreen");toast("データをリセットしました。");
 };
 function updateFoundationControls(){
-  if($("toggleSound"))$("toggleSound").textContent=`🔊 効果音：${data.settings.sound?"ON":"OFF"}`;
-  if($("toggleBgm"))$("toggleBgm").textContent=`🎵 BGM：${data.settings.bgm?"ON":"OFF"}`;
-  if($("toggleAnimations"))$("toggleAnimations").textContent=`🌳 街のアニメーション：${data.settings.animations?"ON":"OFF"}`;
+  updateVolumeControl("bgmVolume","bgmVolumeValue",data.settings.bgmVolume??72);
+  updateVolumeControl("effectVolume","effectVolumeValue",data.settings.effectVolume??72);
+  const sw=$("toggleAnimations");if(sw){sw.classList.toggle("on",data.settings.animations!==false);sw.querySelector("span").textContent=data.settings.animations!==false?"ON":"OFF";}
+  SoundEngine.setVolumes();
 }
 const originalRenderAll=renderAll;
 renderAll=function(){originalRenderAll();updateFoundationControls();};
+
+function initLeafParticles(){
+  const layer=$("leafParticles");if(!layer||layer.childElementCount)return;
+  const positions=[[8,8],[18,4],[29,12],[72,5],[85,11],[92,20],[12,43],[25,38],[78,40],[90,49],[9,67],[22,73],[76,69],[89,76]];
+  positions.forEach((pos,i)=>{const leaf=document.createElement("i");leaf.className="leaf-particle";leaf.style.left=`${pos[0]}%`;leaf.style.top=`${pos[1]}%`;leaf.style.setProperty("--leaf-duration",`${5.2+(i%5)*.7}s`);leaf.style.setProperty("--leaf-delay",`${-(i%7)*.8}s`);leaf.style.setProperty("--leaf-drift",`${10+(i%4)*7}px`);if(i%3===1)leaf.style.background="#7f9632";if(i%3===2)leaf.style.background="#b5aa42";layer.appendChild(leaf);});
+}
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
 window.addEventListener("load",()=>{
+  initLeafParticles();
   WorldEngine.apply();
   const standalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
   if(standalone&&data.settings.sound!==false)$("audioUnlock")?.classList.add("show");
