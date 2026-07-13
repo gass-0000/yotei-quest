@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="よていクエスト">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<title>よていクエスト v1.1.4</title>
+<title>よていクエスト v1.2.0</title>
 <style>
 :root{
   --bg:#080808;--panel:#050505;--white:#fff8dc;--muted:#cfc8b8;
@@ -36,7 +36,7 @@ button{touch-action:manipulation}
   border-radius:5px;
 }
 .home-wrap{position:relative}
-.town-image{display:block;width:100%;height:auto;border:4px solid #000}
+.town-image{display:block;width:100%;height:auto;border:4px solid #000;filter:brightness(1.18) saturate(1.08) contrast(1.02)}
 .hotspot{
   position:absolute;border:0;background:transparent;cursor:pointer;
   border-radius:8px;
@@ -81,12 +81,7 @@ button{touch-action:manipulation}
   75%{opacity:.78;filter:brightness(1.5)}
 }
 html[data-animations="off"] .world-layer{display:none}
-html[data-time-phase="morning"] .town-image{filter:sepia(.08) brightness(1.06) saturate(1.03)}
-html[data-time-phase="evening"] .town-image{filter:sepia(.28) hue-rotate(-12deg) saturate(1.17) brightness(.9)}
-html[data-time-phase="night"] .town-image{filter:brightness(.58) saturate(.82) hue-rotate(8deg)}
-html[data-time-phase="night"] .world-layer::after{
-  content:"";position:absolute;inset:0;background:radial-gradient(circle at 72% 12%,rgba(255,249,195,.22),transparent 12%);
-}
+html[data-time-phase] .town-image{filter:brightness(1.18) saturate(1.08) contrast(1.02)}
 .audio-unlock{
   position:fixed;z-index:95;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);
   background:#050505;color:var(--white);border:3px solid var(--line);outline:2px solid #000;
@@ -138,6 +133,9 @@ html[data-time-phase="night"] .world-layer::after{
 }
 .library-choice-btn strong{display:block;font-size:20px;margin-bottom:9px}
 .company-choice{margin-top:0;border:0;outline:0;box-shadow:none;background:transparent;padding:0}
+.facility-scene{position:relative;margin-bottom:10px}
+.facility-image{display:block;width:100%;height:210px;object-fit:cover;object-position:center;border:4px solid #000;image-rendering:pixelated;filter:brightness(1.04) saturate(1.05)}
+@media(max-width:520px){.facility-image{height:170px}}
 .settings-scene{position:relative;margin-bottom:10px}
 .settings-room{display:block;width:100%;height:190px;object-fit:cover;object-position:center 50%;border:4px solid #000;image-rendering:pixelated;filter:brightness(.88) saturate(.95)}
 .settings-room::after{content:""}
@@ -236,7 +234,8 @@ textarea{min-height:78px}
   </section>
 
   <section id="todayScreen" class="screen">
-    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">今日の予定</div><span></span></div>
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">家・今日の予定</div><span></span></div>
+    <div class="facility-scene"><img class="facility-image" src="./home-room.png" alt="家の室内"></div>
     <div class="pixel-window content"><h2>きょうの クエスト</h2><div id="todayList"></div><button class="main-btn" data-screen="calendarScreen">月間カレンダーを ひらく</button></div>
   </section>
 
@@ -270,6 +269,7 @@ textarea{min-height:78px}
 
   <section id="companyScreen" class="screen">
     <div class="pixel-window header"><button class="back-btn" data-screen="homeScreen">←</button><div class="screen-title">会社</div><span></span></div>
+    <div class="facility-scene"><img class="facility-image" src="./company-room.png" alt="会社の室内"></div>
     <div class="pixel-window content">
       <div class="settings-intro">会社では、予定の確認と仕事記録を行います。</div>
       <div class="library-choice company-choice">
@@ -284,12 +284,14 @@ textarea{min-height:78px}
   </section>
 
   <section id="workScreen" class="screen">
-    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">仕事メモ</div><span></span></div>
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">薬局・仕事メモ</div><span></span></div>
+    <div class="facility-scene"><img class="facility-image" src="./pharmacy-room.png" alt="薬局の室内"></div>
     <div class="pixel-window content"><div id="workList"></div><button class="main-btn" id="addWork">▶ アイデアを登録</button></div>
   </section>
 
   <section id="familyScreen" class="screen">
-    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">子どもの予定</div><span></span></div>
+    <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">公園・子どもの予定</div><span></span></div>
+    <div class="facility-scene"><img class="facility-image" src="./park-room.png" alt="公園"></div>
     <div class="pixel-window content"><div id="familyList"></div><button class="main-btn" id="addFamily">▶ 予定を登録</button></div>
   </section>
 
@@ -317,7 +319,7 @@ textarea{min-height:78px}
       <details class="settings-details">
         <summary>詳細なデータ管理</summary>
         <div class="data-info">
-          アプリ v1.1.4／Schema <strong id="schemaVersionLabel">1</strong><br>
+          アプリ v1.2.0／Schema <strong id="schemaVersionLabel">1</strong><br>
           最終手動バックアップ：<span id="lastBackupLabel">まだありません</span><br>
           最終自動保存：<span id="lastAutoBackupLabel">まだありません</span><br>
           保存データ状態：<span id="dataHealthLabel">確認中</span>
@@ -352,7 +354,7 @@ textarea{min-height:78px}
 
 <script>
 const $=id=>document.getElementById(id);
-const APP_VERSION="1.1.4";
+const APP_VERSION="1.2.0";
 const SCHEMA_VERSION=1;
 const MASTER_KEY="yoteiquest_data_v1";
 const AUTO_BACKUP_KEY="yoteiquest_auto_backup_v1";
