@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="よていクエスト">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<title>よていクエスト v1.2.0</title>
+<title>よていクエスト v1.2.1</title>
 <style>
 :root{
   --bg:#080808;--panel:#050505;--white:#fff8dc;--muted:#cfc8b8;
@@ -99,6 +99,7 @@ html[data-time-phase] .town-image{filter:brightness(1.18) saturate(1.08) contras
 }
 .main-btn{width:100%;padding:12px;margin-top:12px;font-weight:bold}
 .small-btn{padding:5px 7px;font-size:11px}.small-btn.danger{background:var(--danger)}
+.card-actions{display:flex;align-items:flex-start;gap:6px;white-space:nowrap}.small-btn.edit{background:#174f69}
 .card{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px;margin:8px 0;background:#101010;border:2px solid #807868}
 .card-meta{font-size:12px;color:#e7d68b}.card-title{font-size:15px}.card-note{font-size:12px;color:var(--muted);margin-top:4px;white-space:pre-wrap}
 .empty{padding:14px 2px;color:var(--muted)}
@@ -133,9 +134,15 @@ html[data-time-phase] .town-image{filter:brightness(1.18) saturate(1.08) contras
 }
 .library-choice-btn strong{display:block;font-size:20px;margin-bottom:9px}
 .company-choice{margin-top:0;border:0;outline:0;box-shadow:none;background:transparent;padding:0}
-.facility-scene{position:relative;margin-bottom:10px}
-.facility-image{display:block;width:100%;height:210px;object-fit:cover;object-position:center;border:4px solid #000;image-rendering:pixelated;filter:brightness(1.04) saturate(1.05)}
-@media(max-width:520px){.facility-image{height:170px}}
+.facility-scene{position:relative;margin-bottom:10px;background:#050505;border:4px solid #000;overflow:hidden}
+.facility-image{display:block;width:100%;height:auto;max-height:none;object-fit:contain;object-position:center;border:0;image-rendering:auto;filter:brightness(1.04) saturate(1.05)}
+.facility-scene.park-scene .facility-image{aspect-ratio:763/337}
+.facility-scene.pharmacy-scene .facility-image{aspect-ratio:763/280}
+.facility-scene.home-scene .facility-image{aspect-ratio:763/226}
+@media(max-width:520px){
+  .facility-scene{margin-left:0;margin-right:0}
+  .facility-image{width:100%;height:auto;max-width:100%}
+}
 .settings-scene{position:relative;margin-bottom:10px}
 .settings-room{display:block;width:100%;height:190px;object-fit:cover;object-position:center 50%;border:4px solid #000;image-rendering:pixelated;filter:brightness(.88) saturate(.95)}
 .settings-room::after{content:""}
@@ -235,7 +242,7 @@ textarea{min-height:78px}
 
   <section id="todayScreen" class="screen">
     <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">家・今日の予定</div><span></span></div>
-    <div class="facility-scene"><img class="facility-image" src="./home-room.png" alt="家の室内"></div>
+    <div class="facility-scene home-scene"><img class="facility-image" src="./home-room.png" alt="家の室内"></div>
     <div class="pixel-window content"><h2>きょうの クエスト</h2><div id="todayList"></div><button class="main-btn" data-screen="calendarScreen">月間カレンダーを ひらく</button></div>
   </section>
 
@@ -285,13 +292,13 @@ textarea{min-height:78px}
 
   <section id="workScreen" class="screen">
     <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">薬局・仕事メモ</div><span></span></div>
-    <div class="facility-scene"><img class="facility-image" src="./pharmacy-room.png" alt="薬局の室内"></div>
+    <div class="facility-scene pharmacy-scene"><img class="facility-image" src="./pharmacy-room.png" alt="薬局の室内"></div>
     <div class="pixel-window content"><div id="workList"></div><button class="main-btn" id="addWork">▶ アイデアを登録</button></div>
   </section>
 
   <section id="familyScreen" class="screen">
     <div class="pixel-window header"><button class="back-btn">←</button><div class="screen-title">公園・子どもの予定</div><span></span></div>
-    <div class="facility-scene"><img class="facility-image" src="./park-room.png" alt="公園"></div>
+    <div class="facility-scene park-scene"><img class="facility-image" src="./park-room.png" alt="公園"></div>
     <div class="pixel-window content"><div id="familyList"></div><button class="main-btn" id="addFamily">▶ 予定を登録</button></div>
   </section>
 
@@ -319,7 +326,7 @@ textarea{min-height:78px}
       <details class="settings-details">
         <summary>詳細なデータ管理</summary>
         <div class="data-info">
-          アプリ v1.2.0／Schema <strong id="schemaVersionLabel">1</strong><br>
+          アプリ v1.2.1／Schema <strong id="schemaVersionLabel">1</strong><br>
           最終手動バックアップ：<span id="lastBackupLabel">まだありません</span><br>
           最終自動保存：<span id="lastAutoBackupLabel">まだありません</span><br>
           保存データ状態：<span id="dataHealthLabel">確認中</span>
@@ -346,7 +353,7 @@ textarea{min-height:78px}
 <div class="modal" id="genericModal">
   <div class="pixel-window modal-card">
     <h2 id="modalTitle"></h2>
-    <form id="genericForm"><div id="modalFields"></div><div class="modal-actions"><button type="button" class="dialog-btn" id="cancelModal">キャンセル</button><button type="submit" class="dialog-btn">とうろく</button></div></form>
+    <form id="genericForm"><div id="modalFields"></div><div class="modal-actions"><button type="button" class="dialog-btn" id="cancelModal">キャンセル</button><button type="submit" class="dialog-btn" id="submitModal">とうろく</button></div></form>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -354,7 +361,7 @@ textarea{min-height:78px}
 
 <script>
 const $=id=>document.getElementById(id);
-const APP_VERSION="1.2.0";
+const APP_VERSION="1.2.1";
 const SCHEMA_VERSION=1;
 const MASTER_KEY="yoteiquest_data_v1";
 const AUTO_BACKUP_KEY="yoteiquest_auto_backup_v1";
@@ -414,7 +421,7 @@ if(!localStorage.getItem(AUTO_BACKUP_KEY)){
     localStorage.setItem(AUTO_BACKUP_TIME_KEY,new Date().toISOString());
   }catch{}
 }
-let viewDate=new Date(),selectedDate=fmt(new Date()),modalMode="",recipeCategory="main";
+let viewDate=new Date(),selectedDate=fmt(new Date()),modalMode="",recipeCategory="main",editingWorkId=null;
 function fmt(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function pdate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
 function jp(s){const d=pdate(s),w=["日","月","火","水","木","金","土"][d.getDay()];return `${d.getFullYear()}年 ${d.getMonth()+1}月 ${d.getDate()}日（${w}）`}
@@ -555,12 +562,18 @@ function renderCards(target,list,type){
   if(type==="study"){meta=`${item.date} ／ ${item.minutes}分`;title=item.subject;note=item.note}
   if(type==="books"){meta=item.date;title=item.title;note=item.author}
   if(type==="work"){meta=item.date;title=item.title;note=item.note}
-  c.innerHTML=`<div><div class="card-meta">${esc(meta)}</div><div class="card-title">${esc(title)}</div>${note?`<div class="card-note">${esc(note)}</div>`:""}</div><div><button class="small-btn danger">けす</button></div>`;
-  c.querySelector("button").onclick=()=>{if(confirm("けしますか？")){data[type]=data[type].filter(x=>x.id!==item.id);save(type);renderAll()}};
+  const actionHtml=type==="work"
+    ? `<div class="card-actions"><button class="small-btn edit" type="button">編集</button><button class="small-btn danger" type="button">けす</button></div>`
+    : `<div class="card-actions"><button class="small-btn danger" type="button">けす</button></div>`;
+  c.innerHTML=`<div><div class="card-meta">${esc(meta)}</div><div class="card-title">${esc(title)}</div>${note?`<div class="card-note">${esc(note)}</div>`:""}</div>${actionHtml}`;
+  const danger=c.querySelector(".danger");
+  danger.onclick=()=>{if(confirm("けしますか？")){data[type]=data[type].filter(x=>x.id!==item.id);save(type);renderAll()}};
+  if(type==="work"){
+    c.querySelector(".edit").onclick=()=>openModal("work",item);
+  }
   el.appendChild(c)
  })
 }
-
 function renderRecipes(){
  const labels={main:"メイン",side:"副菜",soup:"汁物"};
  $("recipeListTitle").textContent=`${labels[recipeCategory]}のメモ`;
@@ -603,18 +616,22 @@ function renderAll(){
 $("prevMonth").onclick=()=>{viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1);selectedDate=fmt(viewDate);renderCalendar()}
 $("nextMonth").onclick=()=>{viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1);selectedDate=fmt(viewDate);renderCalendar()}
 
-function openModal(mode){
- modalMode=mode;let title="",fields="";
+function openModal(mode,item=null){
+ modalMode=mode;editingWorkId=(mode==="work"&&item)?item.id:null;let title="",fields="";
  if(mode==="events"){title="よていを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${selectedDate}" required><div class="form-grid"><div><label>じかん</label><input id="fTime" type="time"></div><div><label>しゅるい</label><select id="fCat"><option>かぞく</option><option>しごと</option><option>びょういん</option><option>ほいくえん</option><option>じぶん</option></select></div></div><label>なまえ</label><input id="fTitle" required><label>メモ</label><textarea id="fNote"></textarea>`}
  if(mode==="study"){title="べんきょうを きろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>かもく</label><input id="fTitle" required><label>じかん（分）</label><input id="fMinutes" type="number" min="1" value="30" required><label>メモ</label><textarea id="fNote"></textarea>`}
  if(mode==="books"){title="本を とうろく";fields=`<label>よみおえた日</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>本の名前</label><input id="fTitle" required><label>著者</label><input id="fAuthor">`}
- if(mode==="work"){title="アイデアを とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>タイトル</label><input id="fTitle" required><label>内容</label><textarea id="fNote"></textarea>`}
+ if(mode==="work"){
+   const workDate=item?.date||fmt(new Date()),workTitle=esc(item?.title||""),workNote=esc(item?.note||"");
+   title=item?"アイデアを へんしゅう":"アイデアを とうろく";
+   fields=`<label>ひづけ</label><input id="fDate" type="date" value="${workDate}" required><label>タイトル</label><input id="fTitle" value="${workTitle}" required><label>内容</label><textarea id="fNote">${workNote}</textarea>`
+ }
  if(mode==="family"){title="子どもの予定を とうろく";fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>じかん</label><input id="fTime" type="time"><label>よてい</label><input id="fTitle" required><label>メモ</label><textarea id="fNote"></textarea>`}
  if(mode==="recipes"){const labels={main:"メイン",side:"副菜",soup:"汁物"};title=`${labels[recipeCategory]}のレシピメモ`;fields=`<label>ひづけ</label><input id="fDate" type="date" value="${fmt(new Date())}" required><label>料理名</label><input id="fTitle" placeholder="れい：照り焼きチキン" required><label>材料・作り方・メモ</label><textarea id="fNote" placeholder="材料や手順、次回の改善点など"></textarea>`}
- $("modalTitle").textContent=title;$("modalFields").innerHTML=fields;$("genericModal").classList.add("show")
+ $("modalTitle").textContent=title;$("modalFields").innerHTML=fields;$("submitModal").textContent=editingWorkId?"保存":"とうろく";$("genericModal").classList.add("show")
 }
 $("addEvent").onclick=()=>openModal("events");$("addStudy").onclick=()=>openModal("study");$("addBook").onclick=()=>openModal("books");$("addWork").onclick=()=>openModal("work");$("addFamily").onclick=()=>openModal("family");$("addRecipe").onclick=()=>openModal("recipes");
-$("cancelModal").onclick=()=>$("genericModal").classList.remove("show");
+$("cancelModal").onclick=()=>{editingWorkId=null;$("genericModal").classList.remove("show")};
 $("genericForm").onsubmit=e=>{
  e.preventDefault();let item={id:uid()};
  if(modalMode==="events")item={...item,date:$("fDate").value,time:$("fTime").value,category:$("fCat").value,name:$("fTitle").value.trim(),note:$("fNote").value.trim()};
@@ -623,7 +640,14 @@ $("genericForm").onsubmit=e=>{
  if(modalMode==="work")item={...item,date:$("fDate").value,title:$("fTitle").value.trim(),note:$("fNote").value.trim()};
  if(modalMode==="family")item={...item,date:$("fDate").value,time:$("fTime").value,name:$("fTitle").value.trim(),note:$("fNote").value.trim()};
  if(modalMode==="recipes")item={...item,date:$("fDate").value,title:$("fTitle").value.trim(),note:$("fNote").value.trim(),category:recipeCategory};
- data[modalMode].push(item);save(modalMode);$("genericModal").classList.remove("show");renderAll();toast("とうろくしました。")
+ if(modalMode==="work"&&editingWorkId){
+   item.id=editingWorkId;
+   data.work=data.work.map(x=>x.id===editingWorkId?item:x);
+   editingWorkId=null;
+   save("work");$("genericModal").classList.remove("show");renderAll();toast("へんしゅうしました。");
+ }else{
+   data[modalMode].push(item);save(modalMode);$("genericModal").classList.remove("show");renderAll();toast("とうろくしました。");
+ }
 };
 
 function validateDataStore(store=data){
